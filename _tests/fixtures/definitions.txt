@@ -1,0 +1,28 @@
+====== Calculator definitions ======
+
+<calcdefinition recipe>
+title = Scale recipe quantities
+
+input original_servings:
+  type = decimal
+  label = Original servings
+  default = 2
+  min = 1
+
+input target_servings:
+  type = decimal
+  label = Target servings
+  default = 5
+  min = 1
+
+input quantities:
+  break = true
+  type = decimal-list
+  label = Quantities – one number per line
+
+output result:
+  label = Scaled quantities
+  source = quantities
+  formula = value * target_servings / original_servings
+  decimals = 3
+</calcdefinition>

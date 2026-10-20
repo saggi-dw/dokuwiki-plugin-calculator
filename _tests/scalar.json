@@ -1,0 +1,38 @@
+{
+    "name": "dilution",
+    "title": "Dilution",
+    "inputs": [
+        {
+            "kind": "input",
+            "name": "initial",
+            "type": "decimal",
+            "label": "Initial concentration",
+            "unit": "%",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "kind": "input",
+            "name": "addition",
+            "type": "decimal",
+            "label": "Addition rate",
+            "unit": "%",
+            "min": 0,
+            "max": 100
+        }
+    ],
+    "outputs": [
+        {
+            "kind": "output",
+            "name": "result",
+            "type": "decimal",
+            "label": "Final concentration",
+            "unit": "%",
+            "formula": "initial * addition \/ 100",
+            "decimals": 3,
+            "fixed": false
+        }
+    ],
+    "constants": [],
+    "showwork": false
+}

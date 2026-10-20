@@ -1,0 +1,67 @@
+/* Scoped to avoid changes to other DokuWiki forms. */
+.dokuwiki .calculator {
+    border: 1px solid __border__;
+    padding: 1.1em 1.3em;
+    margin: 1.25em 0;
+    background: __background__;
+    color: __text__;
+    max-width: 64em;
+    box-sizing: border-box;
+}
+.dokuwiki .calculator .calculator-title { margin: 0 0 1em; }
+.dokuwiki .calculator .calculator-inputs,
+.dokuwiki .calculator .calculator-outputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14em, 1fr));
+    gap: 1em 1.5em;
+}
+.dokuwiki .calculator .calculator-field { min-width: 0; margin-bottom: 1em; }
+.dokuwiki .calculator label { display: block; font-weight: bold; margin-bottom: .35em; }
+.dokuwiki .calculator input,
+.dokuwiki .calculator textarea {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: .45em .6em;
+    border: 1px solid __border__;
+    background: __background__;
+    color: __text__;
+    font-size: 1em;
+}
+.dokuwiki .calculator textarea { resize: vertical; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.dokuwiki .calculator .calculator-hint { display: block; font-size: .85em; margin-top: .3em; }
+.dokuwiki .calculator button { margin: .35em .4em .35em 0; padding: .4em .85em; cursor: pointer; }
+.dokuwiki .calculator button:disabled { cursor: default; opacity: .55; }
+.dokuwiki .calculator .calculator-status { min-height: 1.5em; margin: .65em 0; }
+.dokuwiki .calculator .calculator-error,
+.dokuwiki .calculator.calculator-error { color: #a52622; }
+.dokuwiki .calculator [aria-invalid="true"] { border-color: #a52622; }
+.dokuwiki .calculator-definition-title { font-weight: bold; }
+@media (max-width: 500px) {
+    .dokuwiki .calculator { padding: .8em; }
+    .dokuwiki .calculator .calculator-inputs,
+    .dokuwiki .calculator .calculator-outputs { grid-template-columns: minmax(0, 1fr); }
+}
+
+.dokuwiki .calculator-definition-error { margin: 0 0 1em; overflow-wrap: anywhere; }
+
+.dokuwiki .calculator .calculator-basis { margin-top: 1em; padding-top: .8em; border-top: 1px solid __border__; }
+.dokuwiki .calculator .calculator-basis h4 { margin: 0 0 .6em; }
+.dokuwiki .calculator .calculator-basis p { margin: .4em 0; overflow-wrap: anywhere; }
+.dokuwiki .calculator .calculator-basis code { white-space: normal; overflow-wrap: anywhere; }
+.dokuwiki .calculator .calculator-constants { width: 100%; margin: .8em 0 0; border-collapse: collapse; }
+.dokuwiki .calculator .calculator-constants th,
+.dokuwiki .calculator .calculator-constants td { padding: .35em .5em; border: 1px solid __border__; text-align: left; overflow-wrap: anywhere; }
+
+.dokuwiki .calculator .calculator-chem-notation { font-size: 1.6em; font-weight: bold; margin: .6em 0; overflow-wrap: anywhere; }
+.dokuwiki .calculator .calculator-chem-notation sub { font-size: .65em; }
+.dokuwiki .calculator .calculator-table-scroll { overflow-x: auto; max-width: 100%; }
+.dokuwiki .calculator .calculator-chem-table { border-collapse: collapse; width: 100%; margin-bottom: .6em; }
+.dokuwiki .calculator .calculator-chem-table th,
+.dokuwiki .calculator .calculator-chem-table td { border: 1px solid __border__; padding: .4em .55em; }
+.dokuwiki .calculator .calculator-chem-table th { text-align: left; }
+.dokuwiki .calculator .calculator-number { text-align: right; font-variant-numeric: tabular-nums; }
+.dokuwiki .calculator .calculator-copy-fallback { width: 100%; }
+.dokuwiki .calculator [hidden] { display: none !important; }
+
+.dokuwiki .calculator .calculator-field-break { grid-column-start: 1; grid-column-end: -1; }

@@ -1,0 +1,24 @@
+<calcdefinition dilution>
+title = Dilution
+
+input initial:
+  type=decimal
+  label = Initial concentration
+  unit = %
+  min = 0
+  max = 100
+
+input addition:
+  type=decimal
+  label = Addition rate
+  unit = %
+  min = 0
+  max = 100
+
+output result:
+  type=decimal
+  label = Final concentration
+  unit = %
+  formula = initial * addition / 100
+  decimals = 3
+</calcdefinition>

@@ -1,0 +1,203 @@
+{
+    "definition": {
+        "name": "chained",
+        "title": "Chained outputs",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "quantities",
+                "type": "decimal-list",
+                "label": "Quantities"
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "gross_total",
+                "label": "Gross total",
+                "formula": "net_total + tax",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "tax",
+                "label": "Tax",
+                "formula": "sum(net_amounts) * global.vat",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "net_total",
+                "label": "Net total",
+                "formula": "sum(net_amounts)",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "net_amounts",
+                "type": "decimal-list",
+                "source": "quantities",
+                "label": "Net amounts",
+                "formula": "value \/ 3",
+                "decimals": 2,
+                "fixed": true
+            }
+        ],
+        "constants": [
+            {
+                "name": "global.vat",
+                "label": "vat",
+                "unit": "",
+                "value": 0.19,
+                "scope": "global"
+            }
+        ],
+        "showwork": false
+    },
+    "textDefinition": {
+        "name": "chained",
+        "title": "Chained outputs",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "quantities",
+                "type": "regex-list",
+                "pattern": "(?<value>\\d+)",
+                "label": "Quantities",
+                "flags": "u"
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "gross_total",
+                "label": "Gross total",
+                "formula": "net_total + tax",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "tax",
+                "label": "Tax",
+                "formula": "sum(net_amounts) * global.vat",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "net_total",
+                "label": "Net total",
+                "formula": "sum(net_amounts)",
+                "type": "decimal",
+                "decimals": 3,
+                "fixed": false
+            },
+            {
+                "kind": "output",
+                "name": "net_amounts",
+                "source": "quantities",
+                "label": "Net amounts",
+                "formula": "value \/ 3",
+                "decimals": 2,
+                "fixed": true,
+                "type": "text-list"
+            }
+        ],
+        "constants": [
+            {
+                "name": "global.vat",
+                "label": "vat",
+                "unit": "",
+                "value": 0.19,
+                "scope": "global"
+            }
+        ],
+        "showwork": false
+    },
+    "example": {
+        "name": "vat",
+        "title": "Net amounts and VAT",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "quantities",
+                "type": "decimal-list",
+                "label": "Quantities – one number per line",
+                "min": 0,
+                "break": true
+            },
+            {
+                "kind": "input",
+                "name": "price",
+                "type": "decimal",
+                "label": "Net unit price",
+                "unit": "EUR",
+                "default": 1,
+                "min": 0
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "net_amounts",
+                "type": "decimal-list",
+                "source": "quantities",
+                "label": "Net amounts per line",
+                "unit": "EUR",
+                "formula": "value * price",
+                "decimals": 2,
+                "fixed": true,
+                "break": true
+            },
+            {
+                "kind": "output",
+                "name": "net_total",
+                "label": "Net total",
+                "unit": "EUR",
+                "formula": "sum(net_amounts)",
+                "decimals": 2,
+                "fixed": true,
+                "type": "decimal"
+            },
+            {
+                "kind": "output",
+                "name": "tax",
+                "label": "VAT",
+                "unit": "EUR",
+                "formula": "net_total * global.vat",
+                "decimals": 2,
+                "fixed": true,
+                "type": "decimal"
+            },
+            {
+                "kind": "output",
+                "name": "gross_total",
+                "label": "Gross total",
+                "unit": "EUR",
+                "formula": "net_total + tax",
+                "decimals": 2,
+                "fixed": true,
+                "type": "decimal"
+            }
+        ],
+        "constants": [
+            {
+                "name": "global.vat",
+                "label": "vat",
+                "unit": "",
+                "value": 0.19,
+                "scope": "global"
+            }
+        ],
+        "showwork": true
+    }
+}

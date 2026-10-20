@@ -1,0 +1,55 @@
+# In den vorhandenen calcconstants-Block auf der Definitionsseite ergänzen:
+# mehrwertsteuer = 0.19
+# Falls noch kein Block vorhanden ist:
+# <calcconstants>
+# mehrwertsteuer = 0.19
+# </calcconstants>
+
+<calcdefinition mehrwertsteuer>
+title = Nettowerte und Mehrwertsteuer
+showwork = true
+
+input mengen:
+  type = decimal-list
+  label = Mengen – eine Zahl pro Zeile
+  min = 0
+  break = true
+
+input preis:
+  type = decimal
+  label = Nettopreis je Mengeneinheit
+  unit = EUR
+  default = 1
+  min = 0
+
+output nettowerte:
+  type = decimal-list
+  source = mengen
+  label = Nettowerte je Zeile
+  unit = EUR
+  formula = value * preis
+  decimals = 2
+  fixed = true
+  break = true
+
+output netto:
+  label = Nettosumme
+  unit = EUR
+  formula = sum(nettowerte)
+  decimals = 2
+  fixed = true
+
+output steuer:
+  label = Mehrwertsteuer
+  unit = EUR
+  formula = netto * global.mehrwertsteuer
+  decimals = 2
+  fixed = true
+
+output brutto:
+  label = Bruttosumme
+  unit = EUR
+  formula = netto + steuer
+  decimals = 2
+  fixed = true
+</calcdefinition>

@@ -1,0 +1,251 @@
+{
+    "cases": [
+        [
+            "sum(quantities)",
+            true
+        ],
+        [
+            "2 + sum(quantities) * factor",
+            true
+        ],
+        [
+            "sum(factor)",
+            false
+        ],
+        [
+            "sum(quantities, 2)",
+            false
+        ],
+        [
+            "sum(quantities * 2)",
+            false
+        ],
+        [
+            "count(quantities)",
+            true
+        ],
+        [
+            "2 + count(quantities) * factor",
+            true
+        ],
+        [
+            "count(factor)",
+            false
+        ],
+        [
+            "count(quantities, 2)",
+            false
+        ],
+        [
+            "count(quantities * 2)",
+            false
+        ],
+        [
+            "avg(quantities)",
+            true
+        ],
+        [
+            "2 + avg(quantities) * factor",
+            true
+        ],
+        [
+            "avg(factor)",
+            false
+        ],
+        [
+            "avg(quantities, 2)",
+            false
+        ],
+        [
+            "avg(quantities * 2)",
+            false
+        ],
+        [
+            "min(quantities)",
+            true
+        ],
+        [
+            "2 + min(quantities) * factor",
+            true
+        ],
+        [
+            "min(factor)",
+            false
+        ],
+        [
+            "min(quantities, 2)",
+            false
+        ],
+        [
+            "min(quantities * 2)",
+            false
+        ],
+        [
+            "max(quantities)",
+            true
+        ],
+        [
+            "2 + max(quantities) * factor",
+            true
+        ],
+        [
+            "max(factor)",
+            false
+        ],
+        [
+            "max(quantities, 2)",
+            false
+        ],
+        [
+            "max(quantities * 2)",
+            false
+        ],
+        [
+            "sum()",
+            false
+        ],
+        [
+            "sum(unknown)",
+            false
+        ],
+        [
+            "quantities",
+            false
+        ],
+        [
+            "quantities + 1",
+            false
+        ],
+        [
+            "sqrt(quantities)",
+            false
+        ],
+        [
+            "sum(avg(quantities))",
+            false
+        ],
+        [
+            "count(1,2)",
+            false
+        ],
+        [
+            "avg(1,2)",
+            false
+        ],
+        [
+            "sum(quantities).x",
+            false
+        ],
+        [
+            "max(1,2)",
+            true
+        ],
+        [
+            "min(1,2,3)",
+            true
+        ],
+        [
+            "min(avg(quantities), 2)",
+            true
+        ],
+        [
+            "-avg(quantities)",
+            true
+        ],
+        [
+            "value \/ sum(quantities) * 100",
+            true
+        ]
+    ],
+    "definition": {
+        "name": "dosage_change",
+        "title": "Change dosage – carrier remainder",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "batch_quantity",
+                "type": "decimal",
+                "label": "Total batch quantity including carrier",
+                "unit": "kg",
+                "default": 1,
+                "min": 0.001
+            },
+            {
+                "kind": "input",
+                "name": "original_dosage",
+                "type": "decimal",
+                "label": "Original dosage",
+                "unit": "%",
+                "default": 2,
+                "min": 0.001,
+                "max": 100
+            },
+            {
+                "kind": "input",
+                "name": "target_dosage",
+                "type": "decimal",
+                "label": "Target dosage",
+                "unit": "%",
+                "default": 3,
+                "min": 0.001,
+                "max": 100
+            },
+            {
+                "kind": "input",
+                "name": "quantities",
+                "type": "regex-list",
+                "label": "Components without carrier – one kg quantity per line",
+                "default": "Product\tQuantity\nITEM-A\t0,500 kg\nITEM-B\t0,060 kg\nITEM-C\t0,040 kg",
+                "pattern": "(?<value>[+-]?\\d+(?:[.,]\\d+)?)(?=\\s+kg(?:\\s|$))",
+                "flags": "iu",
+                "min": 0,
+                "break": true
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "scaled_components",
+                "type": "text-list",
+                "source": "quantities",
+                "label": "Scaled component quantities without carrier",
+                "formula": "value * original_dosage \/ target_dosage",
+                "unit": "kg",
+                "decimals": 3,
+                "fixed": true,
+                "break": true
+            },
+            {
+                "kind": "output",
+                "name": "component_total",
+                "label": "Total scaled quantity without carrier",
+                "unit": "kg",
+                "formula": "sum(scaled_components)",
+                "decimals": 3,
+                "fixed": true,
+                "type": "decimal"
+            },
+            {
+                "kind": "output",
+                "name": "carrier_remainder",
+                "label": "Carrier remainder – negative values are not usable",
+                "unit": "kg",
+                "formula": "batch_quantity - component_total",
+                "decimals": 3,
+                "fixed": true,
+                "type": "decimal"
+            },
+            {
+                "kind": "output",
+                "name": "item_count",
+                "label": "Recognized component count – please check",
+                "formula": "count(quantities)",
+                "decimals": 0,
+                "type": "decimal",
+                "fixed": false
+            }
+        ],
+        "constants": [],
+        "showwork": true
+    }
+}

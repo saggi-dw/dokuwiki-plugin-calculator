@@ -1,0 +1,24 @@
+<calcdefinition verduennung>
+title = Verdünnung
+
+input ausgang:
+  type=decimal
+  label = Ausgangskonzentration
+  unit = %
+  min = 0
+  max = 100
+
+input einsatz:
+  type=decimal
+  label = Einsatzanteil
+  unit = %
+  min = 0
+  max = 100
+
+output ergebnis:
+  type=decimal
+  label = Endkonzentration
+  unit = %
+  formula = ausgang * einsatz / 100
+  decimals = 3
+</calcdefinition>

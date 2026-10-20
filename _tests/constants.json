@@ -1,0 +1,52 @@
+{
+    "name": "ppm_with_constants",
+    "title": "ppm with constants",
+    "inputs": [
+        {
+            "kind": "input",
+            "name": "quantity",
+            "type": "decimal",
+            "label": "Quantity",
+            "unit": "%",
+            "default": 2,
+            "min": 0,
+            "max": 100
+        },
+        {
+            "kind": "input",
+            "name": "factor",
+            "type": "const",
+            "label": "Local factor",
+            "value": 1
+        }
+    ],
+    "outputs": [
+        {
+            "kind": "output",
+            "name": "result",
+            "type": "decimal",
+            "label": "Result",
+            "unit": "ppm",
+            "formula": "quantity * global.ppm_per_percent * factor",
+            "decimals": 0,
+            "fixed": false
+        }
+    ],
+    "constants": [
+        {
+            "name": "factor",
+            "label": "Local factor",
+            "unit": "",
+            "value": 1,
+            "scope": "local"
+        },
+        {
+            "name": "global.ppm_per_percent",
+            "label": "ppm_per_percent",
+            "unit": "",
+            "value": 10000,
+            "scope": "global"
+        }
+    ],
+    "showwork": true
+}

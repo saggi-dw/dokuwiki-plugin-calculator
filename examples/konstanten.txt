@@ -1,0 +1,29 @@
+<calcconstants>
+ppm_pro_prozent = 10000
+gramm_pro_kg = 1000
+</calcconstants>
+
+<calcdefinition ppm_mit_konstanten>
+title = ppm mit Konstanten
+showwork = true
+
+input menge:
+  type = decimal
+  label = Menge
+  unit = %
+  default = 2
+  min = 0
+  max = 100
+
+input faktor:
+  type = const
+  label = Lokaler Faktor
+  value = 1
+
+output ergebnis:
+  type = decimal
+  label = Ergebnis
+  unit = ppm
+  formula = menge * global.ppm_pro_prozent * faktor
+  decimals = 0
+</calcdefinition>

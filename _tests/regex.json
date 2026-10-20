@@ -1,0 +1,45 @@
+{
+    "name": "recipe_text",
+    "title": "Scale recipe text",
+    "inputs": [
+        {
+            "kind": "input",
+            "name": "original_servings",
+            "type": "decimal",
+            "label": "Original servings",
+            "default": 2,
+            "min": 1
+        },
+        {
+            "kind": "input",
+            "name": "target_servings",
+            "type": "decimal",
+            "label": "Target servings",
+            "default": 5,
+            "min": 1
+        },
+        {
+            "kind": "input",
+            "name": "quantities",
+            "break": true,
+            "type": "regex-list",
+            "label": "Ingredients – one ingredient per line",
+            "pattern": "^\\s*(?:[•*]\\s*|-\\s+)?(?<value>[+-]?(?:\\d+(?:[.,]\\d+)?|[.,]\\d+))",
+            "flags": "u"
+        }
+    ],
+    "outputs": [
+        {
+            "kind": "output",
+            "name": "result",
+            "type": "text-list",
+            "label": "Scaled ingredients",
+            "source": "quantities",
+            "formula": "value * target_servings \/ original_servings",
+            "decimals": 3,
+            "fixed": false
+        }
+    ],
+    "constants": [],
+    "showwork": false
+}

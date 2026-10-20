@@ -1,0 +1,43 @@
+{
+    "name": "recipe",
+    "title": "Scale recipe quantities",
+    "inputs": [
+        {
+            "kind": "input",
+            "name": "original_servings",
+            "type": "decimal",
+            "label": "Original servings",
+            "default": 2,
+            "min": 1
+        },
+        {
+            "kind": "input",
+            "name": "target_servings",
+            "type": "decimal",
+            "label": "Target servings",
+            "default": 5,
+            "min": 1
+        },
+        {
+            "kind": "input",
+            "name": "quantities",
+            "break": true,
+            "type": "decimal-list",
+            "label": "Quantities – one number per line"
+        }
+    ],
+    "outputs": [
+        {
+            "kind": "output",
+            "name": "result",
+            "label": "Scaled quantities",
+            "source": "quantities",
+            "formula": "value * target_servings \/ original_servings",
+            "decimals": 3,
+            "type": "decimal-list",
+            "fixed": false
+        }
+    ],
+    "constants": [],
+    "showwork": false
+}

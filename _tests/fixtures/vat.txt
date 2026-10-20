@@ -1,0 +1,48 @@
+<calcdefinition vat>
+title = Net amounts and VAT
+showwork = true
+
+input quantities:
+  type = decimal-list
+  label = Quantities – one number per line
+  min = 0
+  break = true
+
+input price:
+  type = decimal
+  label = Net unit price
+  unit = EUR
+  default = 1
+  min = 0
+
+output net_amounts:
+  type = decimal-list
+  source = quantities
+  label = Net amounts per line
+  unit = EUR
+  formula = value * price
+  decimals = 2
+  fixed = true
+  break = true
+
+output net_total:
+  label = Net total
+  unit = EUR
+  formula = sum(net_amounts)
+  decimals = 2
+  fixed = true
+
+output tax:
+  label = VAT
+  unit = EUR
+  formula = net_total * global.vat
+  decimals = 2
+  fixed = true
+
+output gross_total:
+  label = Gross total
+  unit = EUR
+  formula = net_total + tax
+  decimals = 2
+  fixed = true
+</calcdefinition>

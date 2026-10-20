@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),engine=require('../modules/engine.js');
+const definition=JSON.parse(fs.readFileSync(__dirname+'/constants.json','utf8'));
+assert.equal(engine.calculate(definition,{quantity:'2',factor:'999999'})[0].values[0],20000);
+assert.equal(engine.calculate(definition,{quantity:'0'})[0].values[0],0);
+assert.equal(engine.compile('global.a + a',['global.a','a'])({'global.a':10,a:2}),12);
+assert.throws(()=>engine.compile('global.a.extra',['global.a']),/invalid_expression/);
+assert.throws(()=>engine.compile('global.a()',['global.a']),/invalid_expression/);
+assert.throws(()=>engine.compile('global.constructor.constructor(1)',[]),/invalid_expression/);
+assert.throws(()=>engine.compile('global.missing',[]),/unknown_variable/);
+console.log('JavaScript: global/local constants, fixed values, namespaces and invalid access checks passed.');
