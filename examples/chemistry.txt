@@ -1,0 +1,25 @@
+====== Chemistry calculator ======
+
+===== Interactive formula and proportion =====
+
+<calcchem>
+
+===== Water =====
+
+<calcchem H2O>
+
+===== Sodium chloride =====
+
+<calcchem NaCl>
+
+===== Glucose =====
+
+<calcchem C6H12O6>
+
+===== Grouped formula =====
+
+<calcchem Ca(OH)2>
+
+===== Hydrate =====
+
+<calcchem CuSO4·5H2O>

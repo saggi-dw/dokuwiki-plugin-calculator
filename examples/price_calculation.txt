@@ -1,0 +1,57 @@
+# Add tax_rate to the existing calcconstants block if there is already one.
+# This illustrative rate is a multiplier: 0.19 means 19 percent.
+<calcconstants>
+tax_rate = 0.19
+</calcconstants>
+
+<calcdefinition price_calculation>
+title = Quantities, prices and tax
+showwork = true
+
+input quantities:
+  type = decimal-list
+  label = Item quantities - one number per row
+  default = "2
+3
+1"
+  min = 0
+  break = true
+
+input unit_price:
+  type = decimal
+  label = Net unit price shared by all rows
+  unit = EUR
+  default = 12.50
+  min = 0
+
+output net_amounts:
+  type = decimal-list
+  source = quantities
+  label = Net amounts per row
+  unit = EUR
+  formula = value * unit_price
+  decimals = 2
+  fixed = true
+  break = true
+
+output net_total:
+  label = Net total
+  unit = EUR
+  formula = sum(net_amounts)
+  decimals = 2
+  fixed = true
+
+output tax:
+  label = Tax amount
+  unit = EUR
+  formula = net_total * global.tax_rate
+  decimals = 2
+  fixed = true
+
+output gross_total:
+  label = Gross total
+  unit = EUR
+  formula = net_total + tax
+  decimals = 2
+  fixed = true
+</calcdefinition>

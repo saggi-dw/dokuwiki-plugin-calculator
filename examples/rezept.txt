@@ -1,3 +1,0 @@
-====== Rezeptmengen umrechnen ======
-
-<calcuser rezept>

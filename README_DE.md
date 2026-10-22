@@ -6,7 +6,7 @@ Ein Rechnerbaukasten für dein Wiki: Definiere Eingabefelder und Formeln auf ein
 
 Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texten. Ein integrierter Chemie-Rechner berechnet zusätzlich molare Massen und die Massenanteile der Elemente aus einer chemischen Formel.
 
-**Dokumentierter Stand:** 0.5.5 · **Autor:** saggi · **Lizenz:** [GNU GPL v2](LICENSE)
+**Dokumentierter Stand:** 0.5.5 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
 
 ## Inhalt
 
@@ -27,7 +27,7 @@ Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texte
 
 | Funktion | Beschreibung |
 |---|---|
-| Eigene Rechner | Eingabefelder und Formeln als Wiki-Definition anlegen; z. B. für Verdünnungen, ppm/%-Umrechnungen oder Rezepturmengen. |
+| Eigene Rechner | Eingabefelder und Formeln als Wiki-Definition anlegen; z. B. für Einheitenumrechnungen, Mengenplanung, Listenstatistik oder Preisberechnungen. |
 | Zahlenlisten | Jede Zeile einzeln berechnen und die Reihenfolge erhalten. |
 | RegEx-Textlisten | Eine Zahl je Zeile erkennen, berechnen und im ursprünglichen Text ersetzen. |
 | Aggregate | Summe, Anzahl, Mittelwert, Minimum und Maximum einer Liste verwenden. |
@@ -59,7 +59,7 @@ Eine Integrationsprüfung erfolgte mit DokuWiki **2026-07-14c „Mort“** und P
 
 ## Schnellstart
 
-Dieses Beispiel berechnet eine Endkonzentration aus Ausgangskonzentration und Einsatzanteil.
+Dieses Beispiel berechnet eine Endkonzentration aus der Ausgangskonzentration und dem Anteil der Ausgangslösung an der fertigen Mischung.
 
 **1. Auf der Seite `calculator:definitions` eintragen:**
 
@@ -77,7 +77,7 @@ input concentration:
 
 input addition:
   type = decimal
-  label = Einsatzanteil
+  label = Anteil der Ausgangslösung an der Endmischung
   unit = %
   default = 2
   min = 0
@@ -269,36 +269,37 @@ Ein `regex-list`-Eingang erkennt eine Zahl je Zeile. Eine `text-list`-Ausgabe er
 ```text
 <calcdefinition scale_text>
 title = Mengen im Text umrechnen
+showwork = true
 
 input factor:
   type = decimal
-  label = Faktor
+  label = Skalierungsfaktor
   default = 2
   min = 0
 
 input quantities:
   type = regex-list
-  label = Eine kg-Menge pro Zeile
-  default = "ITEM-A 0,500 kg
-ITEM-B 0,060 kg
-ITEM-C 0,040 kg"
-  pattern = (?<value>[+-]?\d+(?:[.,]\d+)?)(?=\s+kg(?:\s|$))
-  flags = iu
+  label = Eine Menge am Anfang jeder Zeile
+  default = "100 g Mehl
+250 ml Milch
+2 Eier
+Salz nach Geschmack"
+  pattern = ^\s*(?:[•*]\s*|-\s+)?(?<value>[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))
+  flags = u
   min = 0
   break = true
 
 output scaled:
   type = text-list
   source = quantities
-  label = Umgerechnete Mengen
+  label = Umgerechneter Text
   formula = value * factor
   decimals = 3
-  fixed = true
   break = true
 </calcdefinition>
 ```
 
-Einbindung: `<calcuser scale_text>`. Mit Faktor `2` wird aus `ITEM-A 0,500 kg` die Zeile `ITEM-A 1,000 kg`.
+Einbindung: `<calcuser scale_text>`. Mit Faktor `2` wird aus `100 g Mehl` die Zeile `200 g Mehl`; `Salz nach Geschmack` bleibt erhalten.
 
 - Die benannte Gruppe muss **`value`** heißen und eine Zahl erfassen.
 - `pattern` enthält die rohe RegEx ohne umgebende `/`-Trennzeichen. Backslashes direkt schreiben, etwa `\d`.
@@ -316,15 +317,15 @@ Der Chemie-Rechner benötigt keine Definition auf der zentralen Wiki-Seite.
 | Wiki-Syntax | Verhalten |
 |---|---|
 | `<calcchem>` | Formel- und Anteilseingabe mit sofortiger Berechnung. Ein leerer Anteil bedeutet 100 %; erlaubt sind 0 bis 100 %. |
-| `<calcchem TiO2>` | Fest vorgegebene Formel, gesetzte Notation und Ergebnistabelle ohne Eingabefelder; Anteil 100 %. |
+| `<calcchem H2O>` | Fest vorgegebene Formel, gesetzte Notation und Ergebnistabelle ohne Eingabefelder; Anteil 100 %. |
 
-Die Ausgabe zeigt molare Masse, Elementsymbole, Atomanzahl, Atommassen sowie Massenanteile in Prozent und ppm. Indizes werden tiefgestellt, etwa **TiO₂** und **CuSO₄·5H₂O**.
+Die Ausgabe zeigt molare Masse, Elementsymbole, Atomanzahl, Atommassen sowie Massenanteile in Prozent und ppm. Indizes werden tiefgestellt, etwa **H₂O** und **CuSO₄·5H₂O**.
 
 Prozentwerte werden mit drei Nachkommastellen angezeigt, ppm als ganze Zahlen; hier werden sprachabhängige Tausendertrennzeichen verwendet. Ein Doppelklick auf eine Zahlenzelle oder Enter bei fokussierter Zelle kopiert den ungerundeten Wert. Die Tabellen-Kopierfunktion übernimmt die angezeigten Werte als tabulatorgetrennten Text.
 
 ### Unterstützte Formeln
 
-- Elementsymbole mit korrekter Groß-/Kleinschreibung: `TiO2`, nicht `tio2`.
+- Elementsymbole mit korrekter Groß-/Kleinschreibung: `H2O`, nicht `h2o`.
 - Ganze positive Indizes und Vorfaktoren sowie wiederholte Elementsymbole.
 - Runde, eckige und geschweifte, auch verschachtelte Klammern.
 - Kristallwasser und Komponenten mit `·`, `*` oder `.` als Trennzeichen.
@@ -353,19 +354,22 @@ Die Titelansicht der Definitionsseite und `showwork = false` verbergen keinen Qu
 
 ## Beispiele
 
-Vollständige Wiki-Beispiele liegen im Repository unter [`examples/`](examples/):
+Der [Beispielordner](examples/README.md) enthält eigenständig verwendbare Rechner mit englischen Beschriftungen und neutralen Beispieldaten. Die Zahlenformatierung richtet sich nach der Sprache des Wikis.
 
 | Datei | Beispiel |
 |---|---|
-| [definitions.txt](examples/definitions.txt) | Rezeptmengen auf eine andere Personenzahl skalieren. |
-| [verduennung.txt](examples/verduennung.txt) | Verdünnung mit zwei Einzelwerten. |
-| [konstanten.txt](examples/konstanten.txt) | ppm-Umrechnung mit lokalen und globalen Konstanten. |
-| [rezept_regex.txt](examples/rezept_regex.txt) | Zutatenmengen im Text ersetzen. |
-| [dosierungswechsel.txt](examples/dosierungswechsel.txt) | Komponenten umrechnen und Trägerrest berechnen. |
-| [mehrwertsteuer.txt](examples/mehrwertsteuer.txt) | Ergebnislisten, Nettosumme, Steuerbetrag und Bruttosumme verknüpfen. |
-| [chemie.txt](examples/chemie.txt) | Interaktive und fest vorgegebene chemische Formeln. |
+| [unit_conversion.txt](examples/unit_conversion.txt) | Kilogramm mit einer lokalen Konstante in Gramm umrechnen. |
+| [percentage_conversion.txt](examples/percentage_conversion.txt) | Prozent in ppm und zurück umrechnen. |
+| [scale_quantities.txt](examples/scale_quantities.txt) | Eine Mengenliste auf eine andere Anzahl von Portionen oder Einheiten skalieren. |
+| [scale_text.txt](examples/scale_text.txt) | Mengen in einem Rezepttext skalieren und übrige Zeilen erhalten. |
+| [statistics.txt](examples/statistics.txt) | Summe, Anzahl, Mittelwert, Minimum und Maximum berechnen. |
+| [price_calculation.txt](examples/price_calculation.txt) | Nettowerte, Steuerbetrag und Bruttosumme mit verknüpften Ausgaben berechnen. |
+| [dilution.txt](examples/dilution.txt) | Eine Endkonzentration aus zwei Prozentangaben berechnen. |
+| [chemistry.txt](examples/chemistry.txt) | Wasser, Kochsalz, Glucose sowie Formeln mit Gruppen und Kristallwasser untersuchen. |
 
-Beim Dosierungswechsel nur Komponenten **ohne Träger** in die Liste aufnehmen und die Gesamtmenge einschließlich Träger separat eingeben. Der Faktor ist bisherige Dosierung geteilt durch neue Dosierung. Das Beispiel erkennt oder entfernt Trägerzeilen nicht automatisch. Ein negativer Trägerrest wird angezeigt, aber nicht automatisch als Fehler abgewiesen.
+Die Beispielübersicht nennt Einbindungssyntax und erwartete Ergebnisse. Zahlenmengen nur in einer gemeinsamen Einheit summieren. Das Textbeispiel erhält Einheiten, rechnet sie aber nicht um. Das Preisbeispiel verwendet einen gemeinsamen Einzelpreis und einen beispielhaften Steuersatz.
+
+Nur die benötigten Definitionen übernehmen. Globale Konstanten gegebenenfalls in einen vorhandenen `<calcconstants>`-Block einfügen; doppelte Definitionsnamen vermeiden.
 
 ## Grenzen und Fehlerbehandlung
 
@@ -426,4 +430,4 @@ Die [`.gitattributes`](.gitattributes) schließt Dotdateien, `_tests/`, `example
 
 GNU General Public License, Version 2. Siehe [LICENSE](LICENSE).
 
-Autor: **saggi** · Kontakt: <saggi@gmx.de>
+Autoren: **saggi und ChatGPT** · Kontakt: <saggi@gmx.de>

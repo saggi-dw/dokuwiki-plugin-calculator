@@ -1,0 +1,39 @@
+<calcdefinition statistics>
+title = List statistics
+showwork = true
+
+input measurements:
+  type = decimal-list
+  label = Measurements - one number per row
+  default = "12.5
+15
+17.5
+
+0"
+  break = true
+
+output total:
+  label = Sum
+  formula = sum(measurements)
+  decimals = 3
+
+output number_of_values:
+  label = Count
+  formula = count(measurements)
+  decimals = 0
+
+output mean:
+  label = Average
+  formula = avg(measurements)
+  decimals = 3
+
+output smallest:
+  label = Minimum
+  formula = min(measurements)
+  decimals = 3
+
+output largest:
+  label = Maximum
+  formula = max(measurements)
+  decimals = 3
+</calcdefinition>

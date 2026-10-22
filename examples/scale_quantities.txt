@@ -1,0 +1,45 @@
+<calcdefinition scale_quantities>
+title = Scale a list of quantities
+showwork = true
+
+input original_size:
+  type = decimal
+  label = Original number of servings or units
+  default = 2
+  min = 0.001
+
+input target_size:
+  type = decimal
+  label = Target number of servings or units
+  default = 5
+  min = 0
+
+input quantities:
+  type = decimal-list
+  label = Quantities - one number per row
+  default = "100
+250
+50"
+  min = 0
+  break = true
+
+output scaled_quantities:
+  type = decimal-list
+  source = quantities
+  label = Scaled quantities
+  formula = value * target_size / original_size
+  decimals = 3
+  fixed = true
+  break = true
+
+output scaled_total:
+  label = Total of scaled quantities in a common unit
+  formula = sum(scaled_quantities)
+  decimals = 3
+  fixed = true
+
+output item_count:
+  label = Number of quantities
+  formula = count(quantities)
+  decimals = 0
+</calcdefinition>

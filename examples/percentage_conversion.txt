@@ -1,0 +1,35 @@
+<calcdefinition percent_to_ppm>
+title = Percent to ppm
+
+input percent:
+  type = decimal
+  label = Proportion
+  unit = %
+  default = 0.25
+  min = 0
+  max = 100
+
+output ppm:
+  label = Proportion
+  unit = ppm
+  formula = percent * 10000
+  decimals = 2
+</calcdefinition>
+
+<calcdefinition ppm_to_percent>
+title = ppm to percent
+
+input ppm:
+  type = decimal
+  label = Proportion
+  unit = ppm
+  default = 2500
+  min = 0
+  max = 1000000
+
+output percent:
+  label = Proportion
+  unit = %
+  formula = ppm / 10000
+  decimals = 4
+</calcdefinition>

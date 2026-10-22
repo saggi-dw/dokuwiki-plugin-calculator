@@ -1,0 +1,23 @@
+<calcdefinition unit_conversion>
+title = Kilograms to grams
+showwork = true
+
+input kilograms:
+  type = decimal
+  label = Mass
+  unit = kg
+  default = 1.5
+  min = 0
+
+input grams_per_kg:
+  type = const
+  label = Conversion factor
+  value = 1000
+
+output grams:
+  label = Mass
+  unit = g
+  formula = kilograms * grams_per_kg
+  decimals = 3
+  fixed = true
+</calcdefinition>

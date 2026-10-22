@@ -1,0 +1,30 @@
+<calcdefinition scale_text>
+title = Scale quantities in text
+showwork = true
+
+input factor:
+  type = decimal
+  label = Scaling factor
+  default = 2
+  min = 0
+
+input quantities:
+  type = regex-list
+  label = One quantity at the start of each row
+  default = "100 g flour
+250 ml milk
+2 eggs
+Salt to taste"
+  pattern = ^\s*(?:[•*]\s*|-\s+)?(?<value>[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))
+  flags = u
+  min = 0
+  break = true
+
+output scaled:
+  type = text-list
+  source = quantities
+  label = Scaled text
+  formula = value * factor
+  decimals = 3
+  break = true
+</calcdefinition>

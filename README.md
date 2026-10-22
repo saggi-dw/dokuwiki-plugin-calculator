@@ -6,7 +6,7 @@ A calculator toolkit for your wiki: define input fields and formulas on a wiki p
 
 The plugin supports individual numbers, numeric lists and numbers embedded in text. A built-in chemistry calculator also calculates molar masses and elemental mass fractions from chemical formulas.
 
-**Documented version:** 0.5.5 · **Author:** saggi · **License:** [GNU GPL v2](LICENSE)
+**Documented version:** 0.5.5 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
 
 ## Contents
 
@@ -27,7 +27,7 @@ The plugin supports individual numbers, numeric lists and numbers embedded in te
 
 | Feature | Description |
 |---|---|
-| Custom calculators | Define inputs and formulas in wiki syntax, for example for dilutions, ppm/% conversions or recipe quantities. |
+| Custom calculators | Define inputs and formulas in wiki syntax, for example for unit conversions, quantity scaling, list statistics or price calculations. |
 | Numeric lists | Calculate each row individually while preserving its position. |
 | Regex text lists | Extract one number per row, calculate a result and replace it in the original text. |
 | Aggregates | Use the sum, count, average, minimum and maximum of a list. |
@@ -59,7 +59,7 @@ Integration testing has been performed with DokuWiki **2026-07-14c “Mort”** 
 
 ## Quick start
 
-This example calculates a final concentration from an initial concentration and an addition rate.
+This example calculates a final concentration from the initial concentration and the fraction of the initial solution in the final mixture.
 
 **1. Add this definition to `calculator:definitions`:**
 
@@ -77,7 +77,7 @@ input concentration:
 
 input addition:
   type = decimal
-  label = Addition rate
+  label = Fraction of the initial solution in the final mixture
   unit = %
   default = 2
   min = 0
@@ -269,36 +269,37 @@ A `regex-list` input recognizes one number per row. A `text-list` output replace
 ```text
 <calcdefinition scale_text>
 title = Scale quantities in text
+showwork = true
 
 input factor:
   type = decimal
-  label = Factor
+  label = Scaling factor
   default = 2
   min = 0
 
 input quantities:
   type = regex-list
-  label = One kg quantity per row
-  default = "ITEM-A 0.500 kg
-ITEM-B 0.060 kg
-ITEM-C 0.040 kg"
-  pattern = (?<value>[+-]?\d+(?:[.,]\d+)?)(?=\s+kg(?:\s|$))
-  flags = iu
+  label = One quantity at the start of each row
+  default = "100 g flour
+250 ml milk
+2 eggs
+Salt to taste"
+  pattern = ^\s*(?:[•*]\s*|-\s+)?(?<value>[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))
+  flags = u
   min = 0
   break = true
 
 output scaled:
   type = text-list
   source = quantities
-  label = Scaled quantities
+  label = Scaled text
   formula = value * factor
   decimals = 3
-  fixed = true
   break = true
 </calcdefinition>
 ```
 
-Embed it with `<calcuser scale_text>`. With a factor of `2`, `ITEM-A 0.500 kg` becomes `ITEM-A 1.000 kg` in an English-language wiki.
+Embed it with `<calcuser scale_text>`. With a factor of `2`, `100 g flour` becomes `200 g flour`; `Salt to taste` remains unchanged.
 
 - The named capture group must be called **`value`** and capture a number.
 - `pattern` contains the raw regex without enclosing `/` delimiters. Write backslashes directly, for example `\d`.
@@ -316,15 +317,15 @@ The chemistry calculator does not need a definition on the central wiki page.
 | Wiki syntax | Behavior |
 |---|---|
 | `<calcchem>` | Formula and proportion inputs with immediate calculation. An empty proportion means 100 %; the permitted range is 0 to 100 %. |
-| `<calcchem TiO2>` | Fixed formula, formatted notation and results table without input fields; proportion: 100 %. |
+| `<calcchem H2O>` | Fixed formula, formatted notation and results table without input fields; proportion: 100 %. |
 
-The output shows molar mass, element symbols, atom counts, atomic masses and mass fractions in percent and ppm. Indices are displayed as subscripts, for example **TiO₂** and **CuSO₄·5H₂O**.
+The output shows molar mass, element symbols, atom counts, atomic masses and mass fractions in percent and ppm. Indices are displayed as subscripts, for example **H₂O** and **CuSO₄·5H₂O**.
 
 Percentages are displayed with three decimal places and ppm as integers, using locale-specific thousands separators. Double-clicking a numeric cell, or pressing Enter while it is focused, copies the unrounded value. The table copy button copies the displayed values as tab-separated text.
 
 ### Supported formulas
 
-- Case-sensitive element symbols: `TiO2`, not `tio2`.
+- Case-sensitive element symbols: `H2O`, not `h2o`.
 - Positive integer indices and coefficients, and repeated element symbols.
 - Nested parentheses, square brackets and braces.
 - Hydrates and components separated by `·`, `*` or `.`.
@@ -353,19 +354,22 @@ Showing only titles on the definitions page and setting `showwork = false` do no
 
 ## Examples
 
-Complete wiki examples are available in the repository under [`examples/`](examples/). These example files are in German; the inline examples in this README use English labels.
+The [examples directory](examples/README.md) contains self-contained calculators with English labels and generic sample data. Number formatting follows the language of the wiki.
 
 | File | Example |
 |---|---|
-| [definitions.txt](examples/definitions.txt) | Scale recipe quantities to a different number of servings. |
-| [verduennung.txt](examples/verduennung.txt) | Dilution using two scalar inputs. |
-| [konstanten.txt](examples/konstanten.txt) | ppm conversion with local and global constants. |
-| [rezept_regex.txt](examples/rezept_regex.txt) | Replace ingredient quantities in text. |
-| [dosierungswechsel.txt](examples/dosierungswechsel.txt) | Scale component quantities and calculate a carrier remainder. |
-| [mehrwertsteuer.txt](examples/mehrwertsteuer.txt) | Link output lists, net total, tax and gross total. |
-| [chemie.txt](examples/chemie.txt) | Interactive and fixed chemical formulas. |
+| [unit_conversion.txt](examples/unit_conversion.txt) | Convert kilograms to grams using a local constant. |
+| [percentage_conversion.txt](examples/percentage_conversion.txt) | Convert percentages to ppm and back. |
+| [scale_quantities.txt](examples/scale_quantities.txt) | Scale a list to a different number of servings or units. |
+| [scale_text.txt](examples/scale_text.txt) | Scale quantities in recipe text and preserve unmatched rows. |
+| [statistics.txt](examples/statistics.txt) | Calculate sum, count, average, minimum and maximum. |
+| [price_calculation.txt](examples/price_calculation.txt) | Calculate net amounts, tax and gross total with linked outputs. |
+| [dilution.txt](examples/dilution.txt) | Calculate a final concentration from two percentage inputs. |
+| [chemistry.txt](examples/chemistry.txt) | Explore water, sodium chloride, glucose and grouped or hydrated formulas. |
 
-For the dosage-change example, include only components **without the carrier** in the list and enter the total batch quantity including the carrier separately. The factor is original dosage divided by target dosage. The example does not detect or remove carrier rows automatically. Negative carrier remainders are displayed rather than automatically rejected.
+The examples index includes embedding tags and expected default results. Use a common unit when summing numeric quantities. The text example preserves units without converting them. The price example uses one shared unit price and an illustrative tax rate.
+
+Copy only the definitions you need. Merge global constants into an existing `<calcconstants>` block if present, and avoid duplicate definition names.
 
 ## Limits and error handling
 
@@ -426,4 +430,4 @@ The [`.gitattributes`](.gitattributes) excludes dotfiles, `_tests/`, `examples/`
 
 GNU General Public License, version 2. See [LICENSE](LICENSE).
 
-Author: **saggi** · Contact: <saggi@gmx.de>
+Authors: **saggi and ChatGPT** · Contact: <saggi@gmx.de>
