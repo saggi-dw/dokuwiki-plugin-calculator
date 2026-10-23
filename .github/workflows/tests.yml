@@ -1,0 +1,35 @@
+name: Calculator tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  dokuwiki:
+    name: DokuWiki PHPUnit
+    uses: dokuwiki/github-action/.github/workflows/test.yml@main
+    with:
+      matrix-json: '{"php-version":["8.2","8.3","8.4"],"dokuwiki-branch":["stable","master"]}'
+
+  javascript:
+    name: JavaScript engines and regex worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          node --check script.js
+          find modules _test -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Run JavaScript tests
+        run: node --test _test/*.test.js

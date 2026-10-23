@@ -1,4 +1,4 @@
 /.* export-ignore
-/_tests export-ignore
+/_test export-ignore
 /examples export-ignore
 /TESTING.md export-ignore

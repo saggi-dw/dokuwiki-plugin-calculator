@@ -10,7 +10,7 @@ namespace dokuwiki\plugin\struct\meta {
         private $config;
         public function __construct($inline) {
             $GLOBALS['parserCalls'][] = $inline;
-            $fixtures = json_decode(file_get_contents(__DIR__.'/struct-parser.json'), true);
+            $fixtures = json_decode(file_get_contents(dirname(__DIR__).'/struct-parser.json'), true);
             if (!array_key_exists($inline, $fixtures) || $fixtures[$inline] === null) throw new \RuntimeException('Invalid Struct syntax');
             $this->config = $fixtures[$inline];
         }
@@ -37,10 +37,10 @@ namespace {
             return [$schema => ['formula' => $this->value, 'chemical formula' => $this->value, 'formula.with.dot' => $this->value]];
         }
     }
-    require_once __DIR__.'/../syntax/chem.php';
+    require_once dirname(__DIR__).'/../syntax/chem.php';
     $GLOBALS['language'] = [];
     $lang = [];
-    require __DIR__.'/../lang/en/lang.php';
+    require dirname(__DIR__).'/../lang/en/lang.php';
     $GLOBALS['language'] = $lang;
     $ID = 'materials:sample'; $REV = 0;
     $GLOBALS['acl'] = AUTH_READ;
@@ -141,7 +141,7 @@ namespace {
     verifyStruct(count($GLOBALS['parserCalls']) === $parserBefore);
     foreach (['de', 'en'] as $locale) {
         $lang = [];
-        require __DIR__.'/../lang/'.$locale.'/lang.php';
+        require dirname(__DIR__).'/../lang/'.$locale.'/lang.php';
         foreach (['chem_struct_reference','chem_struct_access','chem_struct_missing','chem_struct_read_error','chem_struct_value','chem_struct_unsupported'] as $key) {
             verifyStruct(!empty($lang[$key]) && $lang[$key] !== $key);
         }

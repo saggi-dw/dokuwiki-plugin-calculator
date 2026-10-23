@@ -12,8 +12,8 @@ namespace {
     function plugin_load($type, $name) { $GLOBALS['loads'][] = [$type, $name]; return $GLOBALS['helper']; }
     $loads = []; $autoloads = []; $helper = false;
     spl_autoload_register(function ($name) { $GLOBALS['autoloads'][] = $name; });
-    $lang = []; require __DIR__.'/../lang/en/lang.php'; $messages = $lang;
-    require __DIR__.'/../syntax/chem.php';
+    $lang = []; require dirname(__DIR__).'/../lang/en/lang.php'; $messages = $lang;
+    require dirname(__DIR__).'/../syntax/chem.php';
     $plugin = new syntax_plugin_calculator_chem();
     $ID = 'materials:sample'; $REV = 0;
     $checks = 0;

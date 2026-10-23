@@ -6,7 +6,7 @@ A calculator toolkit for your wiki: define input fields and formulas on a wiki p
 
 The plugin supports individual numbers, numeric lists and numbers embedded in text. A built-in chemistry calculator also calculates molar masses and elemental mass fractions from chemical formulas.
 
-**Documented version:** 0.6.4 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
+**Documented version:** 0.6.5 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
 
 ## Contents
 
@@ -495,21 +495,25 @@ PHP reads and validates definitions; JavaScript performs the calculations. The e
 | `action.php`, `helper.php` | AJAX, page access, permissions and cache integration |
 | `script.js`, `style.css` | Initialization and presentation |
 | `lang/en/`, `lang/de/` | English and German translations |
-| `_tests/` | PHP/JavaScript tests and English test fixtures |
+| `_test/` | PHP/JavaScript tests and English test fixtures |
 
 ### Running tests
 
-From the plugin directory, run the PHP tests first: they also generate the JSON fixtures used by the JavaScript tests. Then run the JavaScript tests. For example, in a POSIX shell:
+PHP tests are PHPUnit tests under `_test/`, grouped as `plugin_calculator`. They run inside DokuWiki's test environment. From a DokuWiki **Git checkout** containing this plugin at `lib/plugins/calculator/`:
 
 ```sh
-for test in _tests/*.test.php; do
-  php "$test" || exit 1
-done
-
-node --test _tests/*.test.js
+COMPOSER=_test/composer.json COMPOSER_VENDOR_DIR=_test/vendor composer install --no-interaction
+_test/vendor/bin/phpunit -c _test/phpunit.xml --group plugin_calculator
+node --test lib/plugins/calculator/_test/*.test.js
 ```
 
-Tests cover expressions, aggregates, output references, defaults, rounding, internationalization and chemistry. Individual tests can be run directly with `php` or `node --test`. See [TESTING.md](TESTING.md) for details and previous integration tests.
+A normal DokuWiki installation archive may not include its test infrastructure. Use a development checkout for these commands. To select a single PHP test class, add e.g. `--filter CalculatorParserTest` to the PHPUnit command.
+
+The PHP tests validate definitions and compare checked-in JSON fixtures with actual parser output. Node tests use those same fixtures to check the JavaScript engine. Tests no longer rewrite fixtures while running. Update a fixture deliberately when its contract changes, then run both suites. Struct adapter tests that define stand-in classes run in child PHP processes to avoid conflicts with real DokuWiki classes.
+
+The [GitHub Actions workflow](.github/workflows/tests.yml) runs on pushes, pull requests and manual dispatch. It reuses DokuWiki's PHPUnit workflow for `stable` and `master`, with PHP 8.2, 8.3 and 8.4, and runs JavaScript syntax checks and tests in a separate Node.js 24 job. The workflow has read-only repository permissions. It does not run automatic code fixes or create pull requests.
+
+Integration tests exercise real DokuWiki syntax parsing, rendering, definition updates, localized errors, permissions, AJAX and cache behavior. Struct remains optional; the normal integration environment verifies operation without Struct. The adapter regression checks use recorded native-parser configurations, not a live Struct database. See [TESTING.md](TESTING.md) for validation details.
 
 ### Translations and extensions
 
@@ -517,7 +521,7 @@ English is the base language; German is included. Additional translations can be
 
 The PHP parser reports language keys, parameters and an optional line number. DokuWiki translates these through `getLang()`. Additional programmed calculators can register modules under `DokuCalculator.modules` and be integrated through a syntax component; scripts are registered through `JS_SCRIPT_LIST` in `action.php`. A module installation mechanism is not included.
 
-The [`.gitattributes`](.gitattributes) excludes dotfiles, `_tests/`, `examples/` and `TESTING.md` from `git archive`. These files still belong in the source repository; installation archives created this way do not contain them.
+The [`.gitattributes`](.gitattributes) excludes dotfiles, `_test/`, `examples/` and `TESTING.md` from `git archive`. These files still belong in the source repository; installation archives created this way do not contain them.
 
 ## License
 

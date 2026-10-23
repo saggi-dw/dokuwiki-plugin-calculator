@@ -6,7 +6,7 @@ Ein Rechnerbaukasten für dein Wiki: Definiere Eingabefelder und Formeln auf ein
 
 Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texten. Ein integrierter Chemie-Rechner berechnet zusätzlich molare Massen und die Massenanteile der Elemente aus einer chemischen Formel.
 
-**Dokumentierter Stand:** 0.6.4 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
+**Dokumentierter Stand:** 0.6.5 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
 
 ## Inhalt
 
@@ -495,21 +495,25 @@ PHP liest und prüft die Definitionen; JavaScript übernimmt die Berechnung. Der
 | `action.php`, `helper.php` | AJAX, Seitenzugriff, Rechte- und Cache-Anbindung |
 | `script.js`, `style.css` | Initialisierung und Darstellung |
 | `lang/en/`, `lang/de/` | Englische und deutsche Übersetzungen |
-| `_tests/` | PHP-/JavaScript-Tests und englische Testdaten |
+| `_test/` | PHP-/JavaScript-Tests und englische Testdaten |
 
 ### Tests ausführen
 
-Im Pluginordner zuerst die PHP-Tests starten; sie erzeugen auch die von JavaScript verwendeten JSON-Testdaten. Danach die JavaScript-Tests ausführen. Beispiel für eine POSIX-Shell:
+Die PHP-Tests unter `_test/` sind PHPUnit-Tests mit der Gruppe `plugin_calculator`. Sie laufen in DokuWikis Testumgebung. Folgende Befehle gelten im Hauptverzeichnis eines DokuWiki-**Git-Checkouts**, in dem das Plugin unter `lib/plugins/calculator/` liegt:
 
 ```sh
-for test in _tests/*.test.php; do
-  php "$test" || exit 1
-done
-
-node --test _tests/*.test.js
+COMPOSER=_test/composer.json COMPOSER_VENDOR_DIR=_test/vendor composer install --no-interaction
+_test/vendor/bin/phpunit -c _test/phpunit.xml --group plugin_calculator
+node --test lib/plugins/calculator/_test/*.test.js
 ```
 
-Die Tests prüfen unter anderem Formeln, Aggregate, Ausgabereferenzen, Standardwerte, Rundung, Internationalisierung und Chemie. Einzelne Tests lassen sich direkt mit `php` bzw. `node --test` starten. Details und frühere Integrationsprüfungen stehen in [TESTING.md](TESTING.md).
+Normale DokuWiki-Installationsarchive enthalten die Testumgebung möglicherweise nicht. Dafür einen Entwicklungs-Checkout verwenden. Einzelne PHP-Testklassen lassen sich beispielsweise mit dem zusätzlichen PHPUnit-Argument `--filter CalculatorParserTest` auswählen.
+
+Die PHP-Tests validieren Definitionen und vergleichen die gespeicherten JSON-Testdaten mit den tatsächlichen Parserergebnissen. Die Node-Tests prüfen mit denselben Testdaten die JavaScript-Rechenengine. Die Tests überschreiben ihre Testdaten nicht mehr. Bei einer beabsichtigten Vertragsänderung die betreffende JSON-Datei gezielt aktualisieren und beide Testsuiten ausführen. Struct-Prüfungen mit nachgebildeten Klassen laufen in eigenen PHP-Prozessen, damit sie nicht mit DokuWikis echten Klassen kollidieren.
+
+Der [GitHub-Actions-Workflow](.github/workflows/tests.yml) läuft bei Pushes, Pull Requests und manueller Ausführung. Er verwendet DokuWikis PHPUnit-Workflow für `stable` und `master` mit PHP 8.2, 8.3 und 8.4. Ein separater Job prüft JavaScript-Syntax und Tests mit Node.js 24. Der Workflow erhält nur Leserechte auf das Repository. Er führt keine automatischen Codekorrekturen aus und erstellt keine Pull Requests.
+
+Integrationstests prüfen die echte DokuWiki-Syntaxverarbeitung, Rendering, geänderte Definitionen, übersetzte Fehler, Berechtigungen, AJAX und Cache-Verhalten. Struct bleibt optional; die normale Integrationsumgebung prüft den Betrieb ohne Struct. Die Regressionstests des Adapters verwenden aufgezeichnete Konfigurationen des Struct-Parsers, keine laufende Struct-Datenbank. Einzelheiten stehen in [TESTING.md](TESTING.md).
 
 ### Übersetzungen und Erweiterungen
 
@@ -517,7 +521,7 @@ Englisch ist die Basissprache, Deutsch ist enthalten. Weitere Übersetzungen wer
 
 Der PHP-Parser liefert Sprachschlüssel, Parameter und gegebenenfalls eine Zeilennummer. DokuWiki übersetzt diese über `getLang()`. Weitere programmierte Rechner können als Module unter `DokuCalculator.modules` registriert und über eine Syntax-Komponente eingebunden werden; die Skripteinbindung erfolgt über `JS_SCRIPT_LIST` in `action.php`. Ein Installationsmechanismus für zusätzliche Module ist nicht enthalten.
 
-Die [`.gitattributes`](.gitattributes) schließt Dotdateien, `_tests/`, `examples/` und `TESTING.md` bei `git archive` aus. Diese Dateien gehören weiterhin ins Quellcode-Repository; ein solcher Installations-Export enthält sie nicht.
+Die [`.gitattributes`](.gitattributes) schließt Dotdateien, `_test/`, `examples/` und `TESTING.md` bei `git archive` aus. Diese Dateien gehören weiterhin ins Quellcode-Repository; ein solcher Installations-Export enthält sie nicht.
 
 ## Lizenz
 
