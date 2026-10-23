@@ -1,0 +1,153 @@
+{
+    "definition": {
+        "name": "line_prices",
+        "title": "Calculate prices from text rows",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "items",
+                "type": "regex-list",
+                "label": "Quantity, count and unit price per row",
+                "default": "2.5 kg x 3 units @ 4.20 EUR\/kg\n1.25 kg x 2 units @ 8.00 EUR\/kg",
+                "pattern": "^(?<quantity>[+-]?\\d+(?:[.,]\\d+)?)\\s*kg\\s*x\\s*(?<count>\\d+)\\s*units\\s*@\\s*(?<price>[+-]?\\d+(?:[.,]\\d+)?)\\s*EUR\/kg$",
+                "flags": "u",
+                "min": 0,
+                "break": true,
+                "groups": [
+                    "quantity",
+                    "count",
+                    "price"
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "line_totals",
+                "type": "decimal-list",
+                "source": "items",
+                "label": "Price per row",
+                "unit": "EUR",
+                "formula": "row.quantity * row.count * row.price",
+                "decimals": 2,
+                "fixed": true,
+                "break": true
+            },
+            {
+                "kind": "output",
+                "name": "total",
+                "label": "Total price",
+                "unit": "EUR",
+                "formula": "sum(line_totals)",
+                "decimals": 2,
+                "fixed": true,
+                "type": "decimal"
+            },
+            {
+                "kind": "output",
+                "name": "matched_rows",
+                "label": "Number of calculated rows",
+                "formula": "count(line_totals)",
+                "decimals": 0,
+                "type": "decimal",
+                "fixed": false
+            }
+        ],
+        "constants": [],
+        "showwork": true
+    },
+    "legacy": {
+        "name": "legacy",
+        "title": "Legacy",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "rows",
+                "type": "regex-list",
+                "label": "Rows",
+                "pattern": "(?<prefix>[A-Z]+) (?<value>\\d+) x (?<count>\\d+)",
+                "flags": "u",
+                "groups": [
+                    "prefix",
+                    "value",
+                    "count"
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "result",
+                "source": "rows",
+                "label": "Result",
+                "formula": "value * row.count",
+                "type": "text-list",
+                "decimals": 3,
+                "fixed": false
+            }
+        ],
+        "constants": [],
+        "showwork": false
+    },
+    "variables": [
+        "row.quantity",
+        "row.count",
+        "row.price",
+        "global.factor",
+        "price"
+    ],
+    "cases": [
+        [
+            "row.quantity * row.count * row.price",
+            true
+        ],
+        [
+            "row.price + price",
+            true
+        ],
+        [
+            "row.price * global.factor",
+            true
+        ],
+        [
+            "max(row.quantity,2)",
+            true
+        ],
+        [
+            "-row.price",
+            true
+        ],
+        [
+            "row.price^2",
+            true
+        ],
+        [
+            "row.unknown",
+            false
+        ],
+        [
+            "row.quantity.extra",
+            false
+        ],
+        [
+            "row.quantity()",
+            false
+        ],
+        [
+            "row[quantity]",
+            false
+        ],
+        [
+            "row.__proto__",
+            false
+        ],
+        [
+            "row.constructor",
+            false
+        ],
+        [
+            "window.row.price",
+            false
+        ]
+    ]
+}

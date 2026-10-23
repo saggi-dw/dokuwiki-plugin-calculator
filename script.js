@@ -1,7 +1,7 @@
-/* Calculator 0.5.5: modules are loaded by JS_SCRIPT_LIST with cache dependencies. */
+/* Calculator 0.6.2: modules are loaded by JS_SCRIPT_LIST with cache dependencies. */
 (function () {
     'use strict';
-    window.DokuCalculator.version = '0.5.5';
+    window.DokuCalculator.version = '0.6.2';
     function init() {
         document.querySelectorAll('[data-calculator="chem"]').forEach(function (host) {
             if (host.getAttribute('data-calculator-initialized')) return;

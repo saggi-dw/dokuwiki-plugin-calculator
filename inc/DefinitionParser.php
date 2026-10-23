@@ -113,7 +113,7 @@ class DefinitionParser
             try {
                 $allowed = $section['kind'] === 'input'
                     ? ['kind', 'name', 'type', 'label', 'unit', 'default', 'min', 'max', 'break']
-                    : ['kind', 'name', 'type', 'label', 'unit', 'source', 'formula', 'decimals', 'fixed', 'break'];
+                    : ['kind', 'name', 'type', 'label', 'unit', 'source', 'formula', 'decimals', 'fixed', 'break', 'template'];
                 $isConstant = $section['kind'] === 'input' && ($section['type'] ?? '') === 'const';
                 if ($isConstant) {
                     $allowed = ['kind', 'name', 'type', 'label', 'unit', 'value'];
@@ -140,7 +140,13 @@ class DefinitionParser
                         if (!preg_match('/^(?:i?u?|ui)$/D', $section['flags'])) throw new DefinitionException('regex_invalid_flags');
                         $captures = [];
                         if (@preg_match(chr(1) . '(?:' . $section['pattern'] . ')|(?:)' . chr(1) . $section['flags'], '', $captures, PREG_UNMATCHED_AS_NULL) === false) throw new DefinitionException('regex_invalid_pattern');
-                        if (!array_key_exists('value', $captures)) throw new DefinitionException('regex_named_group_required');
+                        $groupNames = array_values(array_filter(array_keys($captures), 'is_string'));
+                        if (!$groupNames) throw new DefinitionException('regex_named_group_required');
+                        $section['groups'] = [];
+                        foreach ($groupNames as $groupName) {
+                            if (preg_match('/^[a-z][a-z0-9_]{0,63}$/D', $groupName)) $section['groups'][] = $groupName;
+                            elseif (!in_array('value', $groupNames, true)) throw new DefinitionException('regex_invalid_group_name', [$groupName]);
+                        }
                     }
                     foreach (['min', 'max'] as $key) {
                         if (isset($section[$key])) $section[$key] = self::number($section[$key]);
@@ -173,15 +179,22 @@ class DefinitionParser
                     $section['decimals'] = (int)$digits;
                     if (isset($section['fixed']) && !in_array($section['fixed'], ['true', 'false'], true)) throw new DefinitionException('definition_invalid_boolean', ['fixed']);
                     $section['fixed'] = ($section['fixed'] ?? 'false') === 'true';
+                    if (isset($section['template'])) {
+                        $template = $section['template'];
+                        $literal = preg_replace('/\{(?:line|label|value|unit)\}/', '', $template);
+                        if ($template === '' || strlen($template) > 2000 || preg_match('/[\r\n]/', $template) || strpbrk($literal, '{}') !== false) throw new DefinitionException('definition_invalid_template', [2000]);
+                        if ($section['type'] === 'decimal' && strpos($template, '{line}') !== false) throw new DefinitionException('definition_template_requires_list');
+                    }
                     $outputs[] = $section;
                 }
             } catch (DefinitionException $e) {
                 $properties = [
-                    'definition_invalid_boolean' => 'break', 'regex_invalid_pattern' => 'pattern', 'regex_invalid_flags' => 'flags', 'regex_named_group_required' => 'pattern',
+                    'definition_invalid_boolean' => 'break', 'regex_invalid_pattern' => 'pattern', 'regex_invalid_flags' => 'flags', 'regex_named_group_required' => 'pattern', 'regex_invalid_group_name' => 'pattern',
                     'constants_value_required' => 'value', 'definition_invalid_label' => 'label', 'definition_unit_too_long' => 'unit',
                     'definition_invalid_type' => 'type', 'definition_invalid_output_type' => 'type',
                     'definition_invalid_range' => 'min', 'definition_default_out_of_range' => 'default', 'definition_default_too_large' => 'default',
                     'definition_scalar_source' => 'source', 'definition_invalid_decimals' => 'decimals',
+                    'definition_invalid_template' => 'template', 'definition_template_requires_list' => 'template',
                     'definition_invalid_formula' => 'formula', 'definition_formula_character' => 'formula',
                 ];
                 $property = $e->getLanguageKey() === 'definition_invalid_boolean'
@@ -197,10 +210,15 @@ class DefinitionParser
         }
         foreach ($globals as $globalName => $globalValue) $variables[] = 'global.' . $globalName;
         // Normalize output types before making their names available to expressions.
-        $allLists = $lists;
+        $inputFields = array_column($inputs, null, 'name');
+        $allLists = array_values(array_filter($lists, function ($name) use ($inputFields) {
+            $input = $inputFields[$name];
+            return $input['type'] !== 'regex-list' || in_array('value', $input['groups'], true);
+        }));
         foreach ($outputs as &$output) {
-            $sourceType = isset($output['source'], $sections[$output['source']]) ? ($sections[$output['source']]['type'] ?? '') : '';
-            if (!isset($sections[$output['name']]['type']) && $sourceType === 'regex-list') $output['type'] = 'text-list';
+            $source = $inputFields[$output['source'] ?? ''] ?? [];
+            $sourceType = $source['type'] ?? '';
+            if (!isset($sections[$output['name']]['type']) && $sourceType === 'regex-list' && in_array('value', $source['groups'], true)) $output['type'] = 'text-list';
             if ($output['type'] === 'decimal') $variables[] = $output['name'];
             else $allLists[] = $output['name'];
         }
@@ -209,10 +227,17 @@ class DefinitionParser
         $dependencies = [];
         foreach ($outputs as $output) {
             try {
-                $sourceType = isset($output['source'], $sections[$output['source']]) ? ($sections[$output['source']]['type'] ?? '') : '';
+                $source = $inputFields[$output['source'] ?? ''] ?? [];
+                $sourceType = $source['type'] ?? '';
                 if (in_array($output['type'], ['decimal-list', 'text-list'], true) && (!isset($output['source']) || !$lists || $output['source'] !== $lists[0])) throw new DefinitionException('definition_invalid_source');
-                if (($output['type'] === 'text-list' && $sourceType !== 'regex-list') || ($output['type'] === 'decimal-list' && $sourceType !== 'decimal-list')) throw new DefinitionException('definition_invalid_source');
-                $references = ExpressionValidator::validate($output['formula'], array_merge($variables, in_array($output['type'], ['decimal-list', 'text-list'], true) ? ['value'] : []), $allLists);
+                if (($output['type'] === 'text-list' && $sourceType !== 'regex-list') || ($output['type'] === 'decimal-list' && !in_array($sourceType, ['decimal-list', 'regex-list'], true))) throw new DefinitionException('definition_invalid_source');
+                if ($output['type'] === 'text-list' && !in_array('value', $source['groups'], true)) throw new DefinitionException('regex_text_requires_value');
+                $rowVariables = [];
+                if (in_array($output['type'], ['decimal-list', 'text-list'], true)) {
+                    if ($sourceType !== 'regex-list' || in_array('value', $source['groups'], true)) $rowVariables[] = 'value';
+                    if ($sourceType === 'regex-list') foreach ($source['groups'] as $groupName) $rowVariables[] = 'row.' . $groupName;
+                }
+                $references = ExpressionValidator::validate($output['formula'], array_merge($variables, $rowVariables), $allLists);
                 $dependencies[$output['name']] = $references;
                 foreach ($references as $reference) $used[$reference] = true;
             } catch (DefinitionException $e) {

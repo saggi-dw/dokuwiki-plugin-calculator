@@ -1,0 +1,32 @@
+<calcdefinition conditional_charges>
+title = Items, discounts and fees
+
+input lines:
+  type = regex-list
+  label = One item, discount or fee per line
+  default = "Item 12.50
+Discount 2.00
+Fee 1.50"
+  pattern = ^(?:Item (?<item>[+-]?\d+(?:[.,]\d+)?)|Discount (?<discount>[+-]?\d+(?:[.,]\d+)?)|Fee (?<fee>[+-]?\d+(?:[.,]\d+)?))$
+  flags = iu
+  min = 0
+  break = true
+
+output charges:
+  type = decimal-list
+  source = lines
+  label = Charge
+  unit = EUR
+  formula = if(exists(row.item), row.item, if(exists(row.discount), -row.discount, row.fee))
+  decimals = 2
+  fixed = true
+  template = {line} → {value} {unit}
+  break = true
+
+output total:
+  label = Total
+  unit = EUR
+  formula = sum(charges)
+  decimals = 2
+  fixed = true
+</calcdefinition>

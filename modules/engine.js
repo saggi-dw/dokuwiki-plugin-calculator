@@ -16,7 +16,7 @@
         abs: [1, 1, Math.abs], sqrt: [1, 1, Math.sqrt],
         floor: [1, 1, Math.floor], ceil: [1, 1, Math.ceil], round: [1, 1, Math.round],
         min: [2, 16, function () { return Math.min.apply(null, arguments); }],
-        max: [2, 16, function () { return Math.max.apply(null, arguments); }], pow: [2, 2, Math.pow]
+        max: [2, 16, function () { return Math.max.apply(null, arguments); }], pow: [2, 2, Math.pow], if: [3, 3]
     };
     function compile(expression, variables, listNames) {
         listNames = listNames || [];
@@ -27,7 +27,7 @@
             var rest = expression.slice(position), match;
             if (/^\s/.test(rest)) { position++; continue; }
             if ((match = /^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)/.exec(rest))) tokens.push({ type: 'number', value: Number(match[0]) });
-            else if ((match = /^(?:global\.[a-z][a-z0-9_]*|[a-z][a-z0-9_]*)/.exec(rest))) tokens.push({ type: 'name', value: match[0] });
+            else if ((match = /^(?:(?:global|row)\.[a-z][a-z0-9_]*|[a-z][a-z0-9_]*)/.exec(rest))) tokens.push({ type: 'name', value: match[0] });
             else if ((match = /^[+\-*/%^(),]/.exec(rest))) tokens.push({ type: match[0] });
             else throw error('invalid_expression');
             position += match[0].length;
@@ -46,6 +46,13 @@
                 var name = tokens[at++].value;
                 if (is('(')) {
                     var listToken = tokens[at + 1], closeToken = tokens[at + 2];
+                    if (name === 'exists') {
+                        if (!listToken || listToken.type !== 'name' || listToken.value.indexOf('row.') !== 0 || !closeToken || closeToken.type !== ')') throw error('invalid_expression', name);
+                        if (variables.indexOf(listToken.value) < 0) throw error('unknown_variable', listToken.value);
+                        at += 3;
+                        references[listToken.value] = true;
+                        return {op: 'exists', name: listToken.value};
+                    }
                     if (['sum', 'count', 'avg', 'min', 'max'].indexOf(name) >= 0 &&
                         listToken && listToken.type === 'name' && listNames.indexOf(listToken.value) >= 0 &&
                         closeToken && closeToken.type === ')') {
@@ -89,10 +96,12 @@
         }
         var tree = guarded(sum);
         if (at !== tokens.length) throw error('invalid_expression');
-        function evaluate(node, values) {
+        function evaluate(node, values, readRow, hasRow) {
+            function visit(child) { return evaluate(child, values, readRow, hasRow); }
             var v, a, b;
             if (node.op === 'number') v = node.value;
-            else if (node.op === 'variable') v = values[node.name];
+            else if (node.op === 'variable') v = readRow && node.name.indexOf('row.') === 0 ? readRow(node.name) : values[node.name];
+            else if (node.op === 'exists') v = (hasRow ? hasRow(node.name) : Object.prototype.hasOwnProperty.call(values, node.name) && values[node.name] !== undefined) ? 1 : 0;
             else if (node.op === 'aggregate') {
                 var list = values[node.list], stats = aggregateCache.get(list);
                 if (!stats) {
@@ -111,14 +120,18 @@
                 }
                 v = stats[node.name];
             }
+            else if (node.op === 'call' && node.name === 'if') {
+                a = visit(node.args[0]);
+                v = a === null ? null : visit(node.args[a === 0 ? 2 : 1]);
+            }
             else if (node.op === 'call') {
-                var args = node.args.map(function (n) { return evaluate(n, values); });
+                var args = node.args.map(function (n) { return visit(n); });
                 v = args.indexOf(null) >= 0 ? null : functions[node.name][2].apply(null, args);
             }
-            else if (node.op === 'unary+') v = evaluate(node.right, values);
-            else if (node.op === 'unary-') { v = evaluate(node.right, values); if (v !== null) v = -v; }
+            else if (node.op === 'unary+') v = visit(node.right);
+            else if (node.op === 'unary-') { v = visit(node.right); if (v !== null) v = -v; }
             else {
-                a = evaluate(node.left, values); b = evaluate(node.right, values);
+                a = visit(node.left); b = visit(node.right);
                 if (a === null || b === null) return null;
                 if ((node.op === '/' || node.op === '%') && b === 0) throw error('division_zero');
                 switch (node.op) {
@@ -132,7 +145,7 @@
             if (!Number.isFinite(v)) throw error('nonfinite');
             return v;
         }
-        var run = function (values) { return evaluate(tree, values); };
+        var run = function (values, readRow, hasRow) { return evaluate(tree, values, readRow, hasRow); };
         run.references = Object.keys(references);
         return run;
     }
@@ -142,11 +155,13 @@
     }
     function calculate(def, raw, prepared) {
         var values = Object.create(null), lists = Object.create(null), textRows = Object.create(null);
+        var inputFields = Object.create(null), rowCache = Object.create(null);
         prepared = prepared || {};
         (def.constants || []).forEach(function (constant) {
             if (constant.scope === 'global') values[constant.name] = constant.value;
         });
         def.inputs.forEach(function (field) {
+            inputFields[field.name] = field;
             if (field.type === 'const') { values[field.name] = field.value; }
             else if (field.type === 'decimal') {
                 try { values[field.name] = checkRange(number(raw[field.name] || ''), field); }
@@ -155,8 +170,11 @@
                 var rows = prepared[field.name];
                 if (!rows) throw error('regex_not_ready');
                 textRows[field.name] = rows;
+                rowCache[field.name] = [];
+                var hasValue = (field.groups || ['value']).indexOf('value') >= 0;
                 lists[field.name] = rows.map(function (row, i) {
                     if (row.error) { var bad = error(row.error); bad.line = i + 1; bad.field = field.label; throw bad; }
+                    if (!hasValue) return row.rawGroups === undefined ? null : 0;
                     if (row.raw === undefined) return null;
                     try { return checkRange(number(row.raw), field); }
                     catch (e) { e.line = i + 1; e.field = field.label; throw e; }
@@ -164,6 +182,7 @@
             } else {
                 var text = String(raw[field.name] || '').replace(/\r\n?/g, '\n');
                 var lines = text.split('\n');
+                textRows[field.name] = lines.map(function (line) { return {text: line}; });
                 if (text.length > 200000 || lines.length > 10000) throw error('too_many_lines');
                 lists[field.name] = lines.map(function (line, i) {
                     if (!line.trim()) return null;
@@ -172,19 +191,29 @@
                 });
             }
         });
-        var scalarNames = Object.keys(values), listNames = Object.keys(lists);
+        var scalarNames = Object.keys(values), listNames = Object.keys(lists).filter(function (name) {
+            var field = inputFields[name];
+            return field.type !== 'regex-list' || (field.groups || ['value']).indexOf('value') >= 0;
+        });
         var plans = Object.create(null), results = Object.create(null), state = Object.create(null);
         function isList(output) {
             return output.type === 'decimal-list' || output.type === 'text-list' || (!output.type && !!output.source);
         }
-        listNames.forEach(function (name) { values[name] = lists[name]; });
+        Object.keys(lists).forEach(function (name) { values[name] = lists[name]; });
         def.outputs.forEach(function (output) {
-            if (typeof output.name !== 'string' || scalarNames.indexOf(output.name) >= 0 || listNames.indexOf(output.name) >= 0) throw error('invalid_expression');
+            if (typeof output.name !== 'string' || scalarNames.indexOf(output.name) >= 0 || listNames.indexOf(output.name) >= 0 || Object.prototype.hasOwnProperty.call(lists, output.name)) throw error('invalid_expression');
             (isList(output) ? listNames : scalarNames).push(output.name);
         });
         def.outputs.forEach(function (output) {
             try {
-                plans[output.name] = {output: output, run: compile(output.formula, (isList(output) ? ['value'] : []).concat(scalarNames), listNames)};
+                var source = inputFields[output.source], rowVariables = [];
+                if (isList(output)) {
+                    if (!source || source.type !== 'regex-list' || (source.groups || ['value']).indexOf('value') >= 0) rowVariables.push('value');
+                    if (source && source.type === 'regex-list') (source.groups || ['value']).forEach(function (name) { rowVariables.push('row.' + name); });
+                }
+                if (output.type === 'text-list' && source && source.type === 'regex-list' && (source.groups || ['value']).indexOf('value') < 0) throw error('regex_text_requires_value');
+                var run = compile(output.formula, rowVariables.concat(scalarNames), listNames);
+                plans[output.name] = {output: output, run: run};
             } catch (e) { e.field = output.label; throw e; }
         });
         function resolve(name, path) {
@@ -207,11 +236,31 @@
                 var computed = lists[output.source].map(function (value, i) {
                     if (value === null) return null;
                     values.value = value;
-                    try { return plan.run(values); }
-                    catch (e) { e.line = i + 1; e.field = output.label; throw e; }
+                    var source = inputFields[output.source], row = textRows[output.source] && textRows[output.source][i];
+                    function rawGroup(reference) {
+                        var group = reference.slice(4);
+                        return row && (row.rawGroups ? row.rawGroups[group] : group === 'value' ? row.raw : undefined);
+                    }
+                    function readRow(reference) {
+                        var group = reference.slice(4);
+                        var cache = rowCache[output.source][i] || (rowCache[output.source][i] = Object.create(null));
+                        try {
+                            if (!Object.prototype.hasOwnProperty.call(cache, group)) {
+                                var raw = rawGroup(reference);
+                                if (raw === undefined) throw error('regex_invalid_capture');
+                                cache[group] = checkRange(number(raw), source);
+                            }
+                            return cache[group];
+                        } catch (e) {
+                            e.line = i + 1; e.field = source.label;
+                            e.detail = reference + (e.detail ? ': ' + e.detail : ''); throw e;
+                        }
+                    }
+                    try { return plan.run(values, readRow, function (reference) { return rawGroup(reference) !== undefined; }); }
+                    catch (e) { e.line = i + 1; if (!e.field) e.field = output.label; throw e; }
                 });
                 values[name] = computed;
-                result = {output: output, values: computed, rows: output.type === 'text-list' ? textRows[output.source] : undefined};
+                result = {output: output, values: computed, rows: output.type === 'text-list' || output.template !== undefined ? textRows[output.source] : undefined};
             }
             results[name] = result;
             state[name] = 2;
@@ -226,8 +275,24 @@
         return values.map(function (v) { return v === null ? '' : formatter.format(Object.is(v, -0) ? 0 : v); }).join('\n');
     }
     function formatResult(result, locale) {
-        if (!result.rows) return format(result.values, result.output.decimals, locale, result.output.fixed);
+        var template = result.output.template;
+        if (template === undefined && !result.rows) return format(result.values, result.output.decimals, locale, result.output.fixed);
         var formatter = new Intl.NumberFormat(locale || 'de-DE', { useGrouping: false, minimumFractionDigits: result.output.fixed === true ? result.output.decimals : 0, maximumFractionDigits: result.output.decimals });
+        if (template !== undefined) {
+            if (typeof template !== 'string' || !template.length || new TextEncoder().encode(template).length > 2000 || /[\r\n]/.test(template) ||
+                /[{}]/.test(template.replace(/\{(?:line|label|value|unit)\}/g, '')) ||
+                (!result.rows && template.indexOf('{line}') >= 0)) throw error('invalid_template');
+            return result.values.map(function (value, i) {
+                var line = result.rows ? result.rows[i].text : '';
+                if (value === null) return line;
+                var fields = {
+                    line: line, label: result.output.label || '', unit: result.output.unit || '',
+                    value: formatter.format(Object.is(value, -0) ? 0 : value)
+                };
+                // Replace once: inserted source text and labels never become new placeholders.
+                return template.replace(/\{(line|label|value|unit)\}/g, function (_, name) { return fields[name]; });
+            }).join('\n');
+        }
         return result.rows.map(function (row, i) {
             var value = result.values[i];
             if (value === null) return row.text;

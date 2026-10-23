@@ -1,0 +1,36 @@
+<calcdefinition line_prices>
+title = Calculate prices from text rows
+showwork = true
+
+input items:
+  type = regex-list
+  label = Quantity, count and unit price per row
+  default = "2.5 kg x 3 units @ 4.20 EUR/kg
+1.25 kg x 2 units @ 8.00 EUR/kg"
+  pattern = ^(?<quantity>[+-]?\d+(?:[.,]\d+)?)\s*kg\s*x\s*(?<count>\d+)\s*units\s*@\s*(?<price>[+-]?\d+(?:[.,]\d+)?)\s*EUR/kg$
+  flags = u
+  min = 0
+  break = true
+
+output line_totals:
+  type = decimal-list
+  source = items
+  label = Price per row
+  unit = EUR
+  formula = row.quantity * row.count * row.price
+  decimals = 2
+  fixed = true
+  break = true
+
+output total:
+  label = Total price
+  unit = EUR
+  formula = sum(line_totals)
+  decimals = 2
+  fixed = true
+
+output matched_rows:
+  label = Number of calculated rows
+  formula = count(line_totals)
+  decimals = 0
+</calcdefinition>

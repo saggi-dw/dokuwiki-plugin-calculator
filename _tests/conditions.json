@@ -1,0 +1,139 @@
+{
+    "definition": {
+        "name": "conditional_charges",
+        "title": "Items, discounts and fees",
+        "inputs": [
+            {
+                "kind": "input",
+                "name": "lines",
+                "type": "regex-list",
+                "label": "One item, discount or fee per line",
+                "default": "Item 12.50\nDiscount 2.00\nFee 1.50",
+                "pattern": "^(?:Item (?<item>[+-]?\\d+(?:[.,]\\d+)?)|Discount (?<discount>[+-]?\\d+(?:[.,]\\d+)?)|Fee (?<fee>[+-]?\\d+(?:[.,]\\d+)?))$",
+                "flags": "iu",
+                "min": 0,
+                "break": true,
+                "groups": [
+                    "item",
+                    "discount",
+                    "fee"
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "kind": "output",
+                "name": "charges",
+                "type": "decimal-list",
+                "source": "lines",
+                "label": "Charge",
+                "unit": "EUR",
+                "formula": "if(exists(row.item), row.item, if(exists(row.discount), -row.discount, row.fee))",
+                "decimals": 2,
+                "fixed": true,
+                "template": "{line} → {value} {unit}",
+                "break": true
+            },
+            {
+                "kind": "output",
+                "name": "total",
+                "label": "Total",
+                "unit": "EUR",
+                "formula": "sum(charges)",
+                "decimals": 2,
+                "fixed": true,
+                "type": "decimal"
+            }
+        ],
+        "constants": [],
+        "showwork": false
+    },
+    "variables": [
+        "row.item",
+        "row.discount",
+        "row.fee",
+        "factor"
+    ],
+    "cases": [
+        [
+            "exists(row.item)",
+            true
+        ],
+        [
+            "if(exists(row.item), row.item, 0)",
+            true
+        ],
+        [
+            "if(exists(row.item), row.item, if(exists(row.discount), -row.discount, row.fee))",
+            true
+        ],
+        [
+            "if(0, 1/0, 3)",
+            true
+        ],
+        [
+            "if(-1, 2, 3)",
+            true
+        ],
+        [
+            "if(exists(row.item), row.item * factor, 0)",
+            true
+        ],
+        [
+            "exists(row.unknown)",
+            false
+        ],
+        [
+            "exists(factor)",
+            false
+        ],
+        [
+            "exists(1)",
+            false
+        ],
+        [
+            "exists(row.item + 1)",
+            false
+        ],
+        [
+            "exists()",
+            false
+        ],
+        [
+            "exists(row.item,row.fee)",
+            false
+        ],
+        [
+            "exists(sum(charges))",
+            false
+        ],
+        [
+            "if(1,2)",
+            false
+        ],
+        [
+            "if(1,2,3,4)",
+            false
+        ],
+        [
+            "if()",
+            false
+        ],
+        [
+            "if(1,2,unknown)",
+            false
+        ],
+        [
+            "if(1,2,evil())",
+            false
+        ],
+        [
+            "if(exists(row.item), row.item, row.item.constructor)",
+            false
+        ],
+        [
+            "if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,if(1,1,0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0),0)",
+            false
+        ]
+    ]
+}

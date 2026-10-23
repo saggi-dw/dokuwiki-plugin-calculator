@@ -13,7 +13,7 @@ class ExpressionValidator
     private const FUNCTIONS = [
         'abs' => [1, 1], 'sqrt' => [1, 1], 'floor' => [1, 1],
         'ceil' => [1, 1], 'round' => [1, 1], 'min' => [2, 16],
-        'max' => [2, 16], 'pow' => [2, 2],
+        'max' => [2, 16], 'pow' => [2, 2], 'if' => [3, 3],
     ];
 
     public static function validate($expression, array $variables, array $lists = [])
@@ -29,7 +29,7 @@ class ExpressionValidator
             if (preg_match('/^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)/', $rest, $m)) {
                 if (!is_finite((float)$m[0])) throw new DefinitionException('definition_number_too_large');
                 $parser->tokens[] = ['type' => 'number', 'value' => $m[0]];
-            } elseif (preg_match('/^(?:global\.[a-z][a-z0-9_]*|[a-z][a-z0-9_]*)/', $rest, $m)) {
+            } elseif (preg_match('/^(?:(?:global|row)\.[a-z][a-z0-9_]*|[a-z][a-z0-9_]*)/', $rest, $m)) {
                 $parser->tokens[] = ['type' => 'name', 'value' => $m[0]];
             } elseif (preg_match('/^[+\-*\/%^(),]/', $rest, $m)) {
                 $parser->tokens[] = ['type' => $m[0]];
@@ -70,6 +70,13 @@ class ExpressionValidator
             if ($this->is('(')) {
                 $list = $this->tokens[$this->position + 1] ?? null;
                 $close = $this->tokens[$this->position + 2] ?? null;
+                if ($name === 'exists') {
+                    if (!$list || $list['type'] !== 'name' || strpos($list['value'], 'row.') !== 0 || !$close || $close['type'] !== ')') throw new DefinitionException('definition_exists_argument');
+                    if (!in_array($list['value'], $this->variables, true)) throw new DefinitionException('definition_unknown_variable', [$list['value']]);
+                    $this->references[$list['value']] = true;
+                    $this->position += 3;
+                    return;
+                }
                 if (in_array($name, ['sum', 'count', 'avg', 'min', 'max'], true)
                     && $list && $list['type'] === 'name' && in_array($list['value'], $this->lists, true)
                     && $close && $close['type'] === ')') {

@@ -1,0 +1,58 @@
+{
+    "name": "formatted_line_prices",
+    "title": "Prices with original text",
+    "inputs": [
+        {
+            "kind": "input",
+            "name": "items",
+            "type": "regex-list",
+            "label": "Quantity, count and unit price per row",
+            "default": "2.5 kg x 3 units @ 4.20 EUR/kg\n1.25 kg x 2 units @ 8.00 EUR/kg",
+            "pattern": "^(?<quantity>[+-]?\\d+(?:[.,]\\d+)?)\\s*kg\\s*x\\s*(?<count>\\d+)\\s*units\\s*@\\s*(?<price>[+-]?\\d+(?:[.,]\\d+)?)\\s*EUR/kg$",
+            "flags": "u",
+            "min": 0,
+            "break": true,
+            "groups": [
+                "quantity",
+                "count",
+                "price"
+            ]
+        }
+    ],
+    "outputs": [
+        {
+            "kind": "output",
+            "name": "line_totals",
+            "type": "decimal-list",
+            "source": "items",
+            "label": "Price per row",
+            "unit": "EUR",
+            "template": "{line} → {label}: {value} {unit}",
+            "formula": "row.quantity * row.count * row.price",
+            "decimals": 2,
+            "fixed": true,
+            "break": true
+        },
+        {
+            "kind": "output",
+            "name": "total",
+            "label": "Total price",
+            "unit": "EUR",
+            "formula": "sum(line_totals)",
+            "decimals": 2,
+            "fixed": true,
+            "type": "decimal"
+        },
+        {
+            "kind": "output",
+            "name": "matched_rows",
+            "label": "Number of calculated rows",
+            "formula": "count(line_totals)",
+            "decimals": 0,
+            "type": "decimal",
+            "fixed": false
+        }
+    ],
+    "constants": [],
+    "showwork": true
+}

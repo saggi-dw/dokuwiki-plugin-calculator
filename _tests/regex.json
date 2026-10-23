@@ -25,7 +25,10 @@
             "type": "regex-list",
             "label": "Ingredients – one ingredient per line",
             "pattern": "^\\s*(?:[•*]\\s*|-\\s+)?(?<value>[+-]?(?:\\d+(?:[.,]\\d+)?|[.,]\\d+))",
-            "flags": "u"
+            "flags": "u",
+            "groups": [
+                "value"
+            ]
         }
     ],
     "outputs": [

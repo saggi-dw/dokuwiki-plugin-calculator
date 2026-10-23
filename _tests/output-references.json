@@ -70,7 +70,10 @@
                 "type": "regex-list",
                 "pattern": "(?<value>\\d+)",
                 "label": "Quantities",
-                "flags": "u"
+                "flags": "u",
+                "groups": [
+                    "value"
+                ]
             }
         ],
         "outputs": [

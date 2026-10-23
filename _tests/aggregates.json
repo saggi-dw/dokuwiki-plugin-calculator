@@ -199,7 +199,10 @@
                 "pattern": "(?<value>[+-]?\\d+(?:[.,]\\d+)?)(?=\\s+kg(?:\\s|$))",
                 "flags": "iu",
                 "min": 0,
-                "break": true
+                "break": true,
+                "groups": [
+                    "value"
+                ]
             }
         ],
         "outputs": [

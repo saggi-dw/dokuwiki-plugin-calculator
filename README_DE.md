@@ -6,7 +6,7 @@ Ein Rechnerbaukasten für dein Wiki: Definiere Eingabefelder und Formeln auf ein
 
 Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texten. Ein integrierter Chemie-Rechner berechnet zusätzlich molare Massen und die Massenanteile der Elemente aus einer chemischen Formel.
 
-**Dokumentierter Stand:** 0.5.5 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
+**Dokumentierter Stand:** 0.6.2 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
 
 ## Inhalt
 
@@ -29,7 +29,7 @@ Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texte
 |---|---|
 | Eigene Rechner | Eingabefelder und Formeln als Wiki-Definition anlegen; z. B. für Einheitenumrechnungen, Mengenplanung, Listenstatistik oder Preisberechnungen. |
 | Zahlenlisten | Jede Zeile einzeln berechnen und die Reihenfolge erhalten. |
-| RegEx-Textlisten | Eine Zahl je Zeile erkennen, berechnen und im ursprünglichen Text ersetzen. |
+| RegEx-Textlisten | Benannte Zahlengruppen je Zeile erkennen und berechnen; eine Gruppe value lässt sich im Ursprungstext ersetzen. |
 | Aggregate | Summe, Anzahl, Mittelwert, Minimum und Maximum einer Liste verwenden. |
 | Verknüpfte Ausgaben | Mit berechneten Einzelwerten und Ergebnislisten weiterrechnen. |
 | Konstanten | Feste Werte lokal je Rechner oder global auf der Definitionsseite hinterlegen. |
@@ -121,7 +121,7 @@ Eine zentrale Definitionsseite kann mehrere benannte `<calcdefinition name>`-Bl�
 |---|---|---|
 | `decimal` | Ein einzelner Zahlenwert | `label`, optional `unit`, `default`, `min`, `max`, `break` |
 | `decimal-list` | Eine Zahl pro Zeile | `label`, optional `unit`, `default`, `min`, `max`, `break` |
-| `regex-list` | Zahlen aus Textzeilen erfassen | `label`, `pattern`, optional `flags`, `unit`, `default`, `min`, `max`, `break` |
+| `regex-list` | Benannte Zahlen aus Textzeilen erfassen | `label`, `pattern`, optional `flags`, `unit`, `default`, `min`, `max`, `break` |
 | `const` | Eine feste lokale Konstante | `value`, optional `label`, `unit`; kein Eingabefeld |
 
 `min` und `max` sind einschließlich ihrer Grenzwerte gültig. Bei Listen werden sie auf jeden erkannten Zahlenwert angewendet. Einzelne Zahlenfelder dürfen nicht leer bleiben; leere Listen sind erlaubt.
@@ -137,11 +137,37 @@ Eine zentrale Definitionsseite kann mehrere benannte `<calcdefinition name>`-Bl�
 | `unit` | Optionale Anzeigeeinheit; bewirkt keine automatische Umrechnung. |
 | `decimals` | Maximal angezeigte Nachkommastellen: `0` bis `12`, Standard `3`. |
 | `fixed` | Mit `true` genau `decimals` Stellen anzeigen; Standard `false`. |
+| `template` | Optionale Textvorlage für die Ausgabe; siehe unten. |
 | `break` | Mit `true` eine neue Zeile beginnen und die volle Breite belegen; Standard `false`. |
 
-Ohne `type` wird eine Einzelausgabe angenommen. Mit `source` wird der Typ passend zum Eingang gewählt: `decimal-list` bei einer Zahlenliste, `text-list` bei einer RegEx-Liste.
+Ohne `type` wird eine Einzelausgabe angenommen. Mit `source` wird der Typ passend zum Eingang gewählt: `decimal-list` bei einer Zahlenliste oder RegEx-Liste ohne Gruppe `value`; `text-list` bei einer RegEx-Liste mit Gruppe `value`. Eine RegEx-Quelle kann auch ausdrücklich als `decimal-list` ausgegeben werden.
 
-In Listenausgaben ist `value` der aktuelle Zahlenwert des Eingangs. Eine Einzelausgabe hat keine `source` und kein `value`. `source` verweist immer auf einen **Eingang**, nicht auf eine andere Ausgabe.
+Bei Zahlenlisten ist `value` der aktuelle Zahlenwert des Eingangs. RegEx-Quellen stellen benannte Gruppen als `row.name` bereit; bei einer Gruppe `value` zusätzlich als `value`. Eine Einzelausgabe hat keine `source` und kein `value`. `source` verweist immer auf einen **Eingang**, nicht auf eine andere Ausgabe.
+
+### Ausgabevorlagen
+
+Mit `template` lässt sich der angezeigte Text je Ergebnis gestalten. Die Eigenschaft steht im Ausgabeblock, ohne umschließende Anführungszeichen:
+
+```text
+  template = {line} → {label}: {value} {unit}
+```
+
+Beispiel bei deutschem Zahlenformat:
+
+```text
+1.25 kg x 2 units @ 8.00 EUR/kg → Price per row: 20,00 EUR
+```
+
+| Platzhalter | Ersetzung |
+|---|---|
+| `{line}` | Die ursprüngliche Eingabezeile einschließlich ihrer Leerzeichen; nur bei Listenausgaben. |
+| `{label}` | Die Beschriftung der Ausgabe. |
+| `{value}` | Die berechnete Zahl im Zahlenformat der Wiki-Sprache, mit `decimals` und `fixed`. |
+| `{unit}` | Die Einheit der Ausgabe oder ein leerer Text, falls keine definiert ist. |
+
+Die Reihenfolge ist frei, etwa `{value} {unit} ← {line}`. Vorlagen funktionieren auch bei Einzelausgaben; dort ist `{line}` nicht verfügbar. Leere und nicht erkannte Eingabezeilen bleiben unverändert. Die Vorlage betrifft nur die Anzeige: Aggregate und weitere Ausgaben verwenden weiterhin die ungerundeten Zahlen.
+
+Ohne `template` bleibt das bisherige Verhalten erhalten, einschließlich des Ersetzens der Gruppe `value` in Textlisten. Mit Vorlage wird stattdessen die gesamte Ausgabezeile gestaltet. Vorlagen sind einfacher Text, kein HTML und keine Rechenausdrücke. Erlaubt ist eine nicht leere Zeile mit höchstens 2000 UTF-8-Bytes und den vier Platzhaltern; zusätzliche geschweifte Klammern oder Escape-Regeln sind nicht vorgesehen. Eine vollständige Definition steht in [templated_output.txt](examples/templated_output.txt).
 
 ### Standardwerte und Layout
 
@@ -186,6 +212,26 @@ In Formeln ausschließlich den **Dezimalpunkt** verwenden. Kommas trennen Funkti
 | `min(x, y, …)`, `max(x, y, …)` | Minimum bzw. Maximum von 2 bis 16 Einzelwerten |
 
 Es gibt keine implizite Multiplikation: `2 * amount` statt `2amount`. Potenzen sind rechtsassoziativ: `2^3^2 = 512`; `-2^2 = -4`. `round()` folgt JavaScript `Math.round()`, beispielsweise `round(-1.5) = -1`.
+
+### Bedingungen und optionale Gruppen
+
+`exists(row.name)` prüft, ob eine benannte RegEx-Gruppe in der aktuellen Zeile Text erfasst hat. Das Ergebnis ist `1` bei einer belegten Gruppe und `0`, wenn die optionale Gruppe oder Alternative nicht beteiligt war. Eine erfasste Null **ist vorhanden**. Auch eine leer erfasste Zeichenfolge ist vorhanden, lässt sich aber nicht als Zahl verrechnen. Erlaubt ist genau eine bekannte `row.name`-Gruppe aus der RegEx-Quelle der Ausgabe; keine beliebigen Ausdrücke, Einzeleingaben oder Listen.
+
+`if(bedingung, dann, sonst)` wertet die Bedingung und anschließend **nur den gewählten Zweig** aus. Bei Null wird `sonst` gewählt, bei jeder anderen endlichen Zahl `dann`. Ein leeres Ergebnis (`null`), etwa `avg()` einer leeren Liste, bleibt leer, ohne einen Zweig auszuwerten. Aufrufe dürfen innerhalb der bisherigen Größen- und Verschachtelungsgrenzen verschachtelt werden.
+
+```text
+  formula = if(exists(row.component), row.component * factor, 0)
+```
+
+Für mehrere alternative Zeilentypen:
+
+```text
+  formula = if(exists(row.item), row.item, if(exists(row.discount), -row.discount, row.fee))
+```
+
+Direkter Zugriff auf eine fehlende Gruppe bleibt ein Fehler. Benannte Gruppen werden erst beim Zugriff in Zahlen umgewandelt und gegen die Eingabegrenzen geprüft; `exists()` prüft nur ihr Vorhandensein, nicht ihre Gültigkeit als Zahl. Normale Zahleneingaben und die bisherige Gruppe `value` werden weiterhin wie zuvor validiert. Leere und nicht erkannte Zeilen werden weiterhin übersprungen.
+
+Alle Zweige werden beim Laden auf Syntax, gültige Namen und Ausgabeabhängigkeiten geprüft. Ausgabeabhängigkeiten bleiben statisch: `if()` umgeht weder ungültige Definitionen noch Kreisbezüge oder Fehler in einer anderen Ausgabe. Übersprungen wird nur die Berechnung innerhalb des eigenen ungewählten Zweigs. [conditional_rows.txt](examples/conditional_rows.txt) enthält einen vollständigen Rechner mit verschachtelten Bedingungen, Ausgabevorlagen und Gesamtsumme.
 
 ### Listenfunktionen
 
@@ -264,7 +310,7 @@ Namen beginnen mit einem Kleinbuchstaben; danach sind Kleinbuchstaben, Ziffern u
 
 ## Textlisten mit RegEx
 
-Ein `regex-list`-Eingang erkennt eine Zahl je Zeile. Eine `text-list`-Ausgabe ersetzt genau diesen Zahlenbereich; der übrige Text bleibt erhalten.
+Ein `regex-list`-Eingang erkennt benannte Zahlengruppen je Zeile. Mit einer Gruppe `value` kann eine `text-list`-Ausgabe diesen Zahlenbereich ersetzen; der übrige Text bleibt erhalten. Ohne `value` wird je Treffer ein Ergebnis in einer separaten `decimal-list` berechnet.
 
 ```text
 <calcdefinition scale_text>
@@ -301,7 +347,7 @@ output scaled:
 
 Einbindung: `<calcuser scale_text>`. Mit Faktor `2` wird aus `100 g Mehl` die Zeile `200 g Mehl`; `Salz nach Geschmack` bleibt erhalten.
 
-- Die benannte Gruppe muss **`value`** heißen und eine Zahl erfassen.
+- Das Muster benötigt mindestens eine benannte Gruppe. **`value`** ist das Ersetzungsziel einer `text-list`-Ausgabe.
 - `pattern` enthält die rohe RegEx ohne umgebende `/`-Trennzeichen. Backslashes direkt schreiben, etwa `\d`.
 - `flags` erlaubt `i` und `u`, jeweils höchstens einmal; Standard ist `u`.
 - Je Zeile wird nur der erste Treffer verarbeitet. Leerzeilen und Zeilen ohne Treffer bleiben unverändert.
@@ -309,6 +355,38 @@ Einbindung: `<calcuser scale_text>`. Mit Faktor `2` wird aus `100 g Mehl` die Ze
 - Ein Treffer ohne gültige Zahl oder außerhalb von `min`/`max` führt zu einem Fehler mit Zeilennummer.
 
 Die Definitionsprüfung verwendet PHP-PCRE, die Berechnung JavaScript-RegExp. Muster sollten deshalb mit beiden Varianten kompatibel sein. Die Ausführung erfolgt in einem Web Worker mit **zwei Sekunden Zeitlimit**; neue Eingaben brechen eine laufende Auswertung ab.
+
+### Mehrere Zahlengruppen pro Zeile
+
+Benannte Gruppen wie `(?<quantity>...)`, `(?<count>...)` und `(?<price>...)` sind als `row.quantity`, `row.count` und `row.price` verfügbar. Beispiel innerhalb einer Definition:
+
+```text
+input items:
+  type = regex-list
+  label = Quantity, count and price per row
+  pattern = ^(?<quantity>\d+(?:[.,]\d+)?)\s*kg\s*x\s*(?<count>\d+)\s*units\s*@\s*(?<price>\d+(?:[.,]\d+)?)\s*EUR/kg$
+  flags = u
+
+output line_totals:
+  type = decimal-list
+  source = items
+  label = Price per row
+  formula = row.quantity * row.count * row.price
+  decimals = 2
+  fixed = true
+```
+
+Die Zeile `2,5 kg x 3 units @ 4,20 EUR/kg` ergibt im deutschen Wiki `31,50`. Eine Einzelausgabe kann anschließend `sum(line_totals)` verwenden. [multi_value_text.txt](examples/multi_value_text.txt) enthält den vollständigen Rechner mit Standardwerten und Gesamtsumme.
+
+Gruppennamen beginnen mit einem Kleinbuchstaben und enthalten Kleinbuchstaben, Ziffern und Unterstriche. Die Gruppen stehen nur in Listenformeln mit dem zugehörigen RegEx-Eingang als `source` zur Verfügung. `row.price` und ein Eingabefeld `price` bleiben eindeutig.
+
+- Verwendete Gruppen müssen gültige Dezimalzahlen enthalten. Fehlt eine verwendete optionale Gruppe bei einem Treffer, erscheint ein Fehler.
+- `min` und `max` gelten für die von Formeln verwendeten Zahlengruppen. Eine vorhandene Gruppe `value` wird immer geprüft.
+- Leerzeilen und Zeilen ohne Treffer ergeben leere Ergebniszeilen. Eine eingegebene Null zählt als Zahl.
+- Unbenutzte Textgruppen bleiben erlaubt; bisherige Muster bleiben damit kompatibel.
+- Ohne Gruppe `value` die berechnete Ergebnisliste aggregieren, etwa `sum(line_totals)` oder `count(line_totals)`. Der Eingang selbst hat keine eindeutige Zahlenspalte.
+- Eine `text-list` benötigt `value` und ersetzt nur diese Gruppe. Andere Ersetzungsziele sind noch nicht vorgesehen.
+- Bisherige Formeln mit `value` bleiben gültig; alternativ ist `row.value` verfügbar.
 
 ## Chemie-Rechner
 
@@ -362,6 +440,7 @@ Der [Beispielordner](examples/README.md) enthält eigenständig verwendbare Rech
 | [percentage_conversion.txt](examples/percentage_conversion.txt) | Prozent in ppm und zurück umrechnen. |
 | [scale_quantities.txt](examples/scale_quantities.txt) | Eine Mengenliste auf eine andere Anzahl von Portionen oder Einheiten skalieren. |
 | [scale_text.txt](examples/scale_text.txt) | Mengen in einem Rezepttext skalieren und übrige Zeilen erhalten. |
+| [multi_value_text.txt](examples/multi_value_text.txt) | Zeilenpreis aus Menge, Anzahl und Preis berechnen. |
 | [statistics.txt](examples/statistics.txt) | Summe, Anzahl, Mittelwert, Minimum und Maximum berechnen. |
 | [price_calculation.txt](examples/price_calculation.txt) | Nettowerte, Steuerbetrag und Bruttosumme mit verknüpften Ausgaben berechnen. |
 | [dilution.txt](examples/dilution.txt) | Eine Endkonzentration aus zwei Prozentangaben berechnen. |

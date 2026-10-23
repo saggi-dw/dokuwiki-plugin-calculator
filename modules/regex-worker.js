@@ -10,10 +10,14 @@ self.onmessage = function (event) {
             if (!line.trim()) return { text: line };
             var match = regex.exec(line);
             if (!match) return { text: line };
-            if (!match.groups || typeof match.groups.value !== 'string' || !match.indices.groups || !match.indices.groups.value) {
-                return { text: line, error: 'regex_invalid_capture' };
+            if (!match.groups || !Object.keys(match.groups).length) return { text: line, error: 'regex_invalid_capture' };
+            var row = { text: line, rawGroups: match.groups };
+            if (Object.prototype.hasOwnProperty.call(match.groups, 'value')) {
+                if (typeof match.groups.value !== 'string' || !match.indices.groups || !match.indices.groups.value) return { text: line, error: 'regex_invalid_capture' };
+                row.start = match.indices.groups.value[0]; row.end = match.indices.groups.value[1];
+                row.raw = match.groups.value;
             }
-            return { text: line, start: match.indices.groups.value[0], end: match.indices.groups.value[1], raw: match.groups.value };
+            return row;
         });
         self.postMessage({ ok: true, rows: result });
     } catch (e) {

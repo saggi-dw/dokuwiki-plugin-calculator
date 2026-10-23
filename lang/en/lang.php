@@ -102,13 +102,13 @@ $lang['chem_basis'] = 'M = Σ(n × atomic mass). Element mass fraction (%) = n �
 $lang['chem_weights_source'] = 'Standard atomic weights: central values without uncertainty propagation or isotopic variation. Source:';
 $lang['chem_fixed'] = 'Fixed formula';
 
-$lang['regex_hint'] = 'The first number captured as value on each line is replaced. Text and unmatched lines are preserved.';
+$lang['regex_hint'] = 'Named numeric groups are available as row.name in list formulas. A value group also supports replacing that number in text.';
 $lang['regex_pattern'] = 'Regular expression';
 $lang['regex_processing'] = 'Processing text …';
 $lang['regex_invalid_pattern'] = 'Invalid regular expression (maximum 512 bytes, without / delimiters).';
 $lang['regex_invalid_flags'] = 'Allowed regular-expression flags: i and u, each at most once.';
-$lang['regex_named_group_required'] = 'The regular expression requires a named numeric group (?<value>...).';
-$lang['regex_invalid_capture'] = 'The regular expression matched but did not capture a number as value.';
+$lang['regex_named_group_required'] = 'The regular expression requires at least one named numeric group, for example (?<value>...) or (?<quantity>...).';
+$lang['regex_invalid_capture'] = 'The regular expression matched but a required numeric group was not captured.';
 $lang['regex_unsupported'] = 'Unable to start regular-expression processing. Web Workers and regular-expression group indices must be available.';
 $lang['regex_timeout'] = 'Regular-expression processing was stopped after 2 seconds. Please simplify the pattern or input.';
 $lang['regex_not_ready'] = 'The text has not been processed yet.';
@@ -121,3 +121,15 @@ $lang['circular_reference'] = 'Circular reference between outputs.';
 $lang['definition_invalid_default_text'] = 'The default text must end with a double quote followed only by whitespace.';
 
 $lang['definition_default_too_large'] = 'The default text may contain at most %s bytes and %s lines.';
+
+$lang['regex_invalid_group_name'] = 'Invalid numeric group name: %s. Use a lowercase letter followed by lowercase letters, digits or underscores (maximum 64 characters).';
+
+$lang['regex_text_requires_value'] = 'Text-list output requires a named value group. Use decimal-list output for other numeric groups.';
+
+$lang['definition_invalid_template'] = 'Invalid output template. Use one non-empty line with at most %s bytes and only {line}, {label}, {value} and {unit} as placeholders.';
+
+$lang['definition_template_requires_list'] = 'The {line} placeholder requires a list output with a source.';
+
+$lang['invalid_template'] = 'Invalid output template.';
+
+$lang['definition_exists_argument'] = 'exists() requires exactly one named regex capture, for example exists(row.quantity).';

@@ -6,7 +6,7 @@ A calculator toolkit for your wiki: define input fields and formulas on a wiki p
 
 The plugin supports individual numbers, numeric lists and numbers embedded in text. A built-in chemistry calculator also calculates molar masses and elemental mass fractions from chemical formulas.
 
-**Documented version:** 0.5.5 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
+**Documented version:** 0.6.2 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
 
 ## Contents
 
@@ -29,7 +29,7 @@ The plugin supports individual numbers, numeric lists and numbers embedded in te
 |---|---|
 | Custom calculators | Define inputs and formulas in wiki syntax, for example for unit conversions, quantity scaling, list statistics or price calculations. |
 | Numeric lists | Calculate each row individually while preserving its position. |
-| Regex text lists | Extract one number per row, calculate a result and replace it in the original text. |
+| Regex text lists | Extract named numeric groups per row and calculate results, optionally replacing a captured value in the original text. |
 | Aggregates | Use the sum, count, average, minimum and maximum of a list. |
 | Linked outputs | Reference calculated scalar values and output lists in other formulas. |
 | Constants | Define fixed values locally for one calculator or globally on the definitions page. |
@@ -121,7 +121,7 @@ The central definitions page can contain several named `<calcdefinition name>` b
 |---|---|---|
 | `decimal` | A single numeric value | `label`; optional `unit`, `default`, `min`, `max`, `break` |
 | `decimal-list` | One number per row | `label`; optional `unit`, `default`, `min`, `max`, `break` |
-| `regex-list` | Extract numbers from text rows | `label`, `pattern`; optional `flags`, `unit`, `default`, `min`, `max`, `break` |
+| `regex-list` | Extract named numbers from text rows | `label`, `pattern`; optional `flags`, `unit`, `default`, `min`, `max`, `break` |
 | `const` | A fixed local constant | `value`; optional `label`, `unit`; no input control |
 
 `min` and `max` are inclusive. For lists, they apply to each recognized number. Scalar numeric inputs cannot be empty; empty lists are allowed.
@@ -137,11 +137,37 @@ The central definitions page can contain several named `<calcdefinition name>` b
 | `unit` | Optional display unit; does not perform automatic unit conversion. |
 | `decimals` | Maximum displayed decimal places: `0` to `12`; default: `3`. |
 | `fixed` | Set to `true` to display exactly `decimals` places; default: `false`. |
+| `template` | Optional plain-text output template; see below. |
 | `break` | Set to `true` to start a new row and use the full width; default: `false`. |
 
-Without `type`, a scalar output is assumed. If `source` is specified, the output type is inferred from the input: `decimal-list` for a numeric list or `text-list` for a regex list.
+Without `type`, a scalar output is assumed. If `source` is specified, the output type is inferred from the input: `decimal-list` for a numeric list or a regex list without a `value` group; `text-list` for a regex list with a `value` group. A regex source can also explicitly produce a `decimal-list`.
 
-In list outputs, `value` is the current number from the input. Scalar outputs have neither `source` nor `value`. `source` always refers to an **input**, not another output.
+In numeric list outputs, `value` is the current number from the input. Regex sources provide `row.name` for named captures and also `value` when that group exists. Scalar outputs have neither `source` nor `value`. `source` always refers to an **input**, not another output.
+
+### Output templates
+
+An optional `template` controls the displayed text for each result. Place it in the output block, without surrounding quotes:
+
+```text
+  template = {line} → {label}: {value} {unit}
+```
+
+For example:
+
+```text
+1.25 kg x 2 units @ 8.00 EUR/kg → Price per row: 20.00 EUR
+```
+
+| Placeholder | Replaced with |
+|---|---|
+| `{line}` | The original input line, including its spacing; list outputs only. |
+| `{label}` | The output label. |
+| `{value}` | The calculated number, formatted using the wiki locale, `decimals` and `fixed`. |
+| `{unit}` | The output unit, or an empty string if none is defined. |
+
+Placeholders can appear in any order, for example `{value} {unit} ← {line}`. Templates also work for scalar outputs, where `{line}` is unavailable. Empty and unmatched input lines remain unchanged. Templates affect only display; aggregates and other outputs still use unrounded numeric results.
+
+Without `template`, existing output behavior is preserved, including replacing the `value` capture in text lists. A template overrides that replacement with the whole formatted line. Templates are plain text, not HTML or expressions. Use one non-empty line of at most 2000 UTF-8 bytes; only the four placeholders are supported, with no literal braces or escaping. See [templated_output.txt](examples/templated_output.txt) for a complete definition.
 
 ### Defaults and layout
 
@@ -186,6 +212,26 @@ In formulas, always use a **decimal point**. Commas separate function arguments.
 | `min(x, y, …)`, `max(x, y, …)` | Minimum or maximum of 2 to 16 scalar arguments |
 
 There is no implicit multiplication: write `2 * amount`, not `2amount`. Exponentiation is right-associative: `2^3^2 = 512`; `-2^2 = -4`. `round()` follows JavaScript `Math.round()`, for example `round(-1.5) = -1`.
+
+### Conditions and optional captures
+
+`exists(row.name)` tests whether a named regex group captured text in the current row. It returns `1` when present and `0` when an alternative or optional group did not participate. A captured zero **is present**. An empty captured string is also present, but is not a valid number when used in arithmetic. The argument must be a known `row.name` from the output's regex source; arbitrary expressions, scalar inputs and lists are not accepted.
+
+`if(condition, then, else)` evaluates the condition followed by **only the selected branch**. Zero selects `else`; any other finite number selects `then`. An empty result (`null`), for example `avg()` of an empty list, remains empty without evaluating either branch. Calls can be nested within the existing expression size and nesting limits.
+
+```text
+  formula = if(exists(row.component), row.component * factor, 0)
+```
+
+For several alternative row types:
+
+```text
+  formula = if(exists(row.item), row.item, if(exists(row.discount), -row.discount, row.fee))
+```
+
+Missing groups are still errors if read directly. Named groups are converted to numbers and checked against the input's range only when read; `exists()` checks presence, not numeric validity. Ordinary numeric inputs and the legacy `value` capture continue to be validated as before. Empty and unmatched lines are skipped as before.
+
+All branches are checked for syntax, valid names and output dependencies when loading the definition. Output dependencies remain static: `if()` does not bypass an invalid definition, a circular reference or errors in another output. It skips evaluation only inside its own unselected branch. See [conditional_rows.txt](examples/conditional_rows.txt) for a complete calculator with nested conditions, templates and an aggregate total.
 
 ### List functions
 
@@ -264,7 +310,7 @@ Names start with a lowercase letter, followed by lowercase letters, digits or `_
 
 ## Regex text lists
 
-A `regex-list` input recognizes one number per row. A `text-list` output replaces exactly that numeric capture while preserving the rest of the text.
+A `regex-list` input recognizes named numeric groups in each row. With a group named `value`, a `text-list` output replaces that capture while preserving the rest of the text. Without `value`, use a `decimal-list` output to calculate a separate result per matched row.
 
 ```text
 <calcdefinition scale_text>
@@ -301,7 +347,7 @@ output scaled:
 
 Embed it with `<calcuser scale_text>`. With a factor of `2`, `100 g flour` becomes `200 g flour`; `Salt to taste` remains unchanged.
 
-- The named capture group must be called **`value`** and capture a number.
+- A pattern needs at least one named group. **`value`** is the replacement target for `text-list` output.
 - `pattern` contains the raw regex without enclosing `/` delimiters. Write backslashes directly, for example `\d`.
 - `flags` supports `i` and `u`, each at most once; the default is `u`.
 - Only the first match per row is processed. Empty rows and unmatched rows remain unchanged.
@@ -309,6 +355,38 @@ Embed it with `<calcuser scale_text>`. With a factor of `2`, `100 g flour` becom
 - An invalid numeric capture or a value outside `min`/`max` produces an error with the row number.
 
 Definition validation uses PHP-PCRE; calculations use JavaScript-RegExp. Patterns should therefore be compatible with both. Matching runs in a Web Worker with a **two-second time limit**; new input cancels any pending evaluation.
+
+### Multiple numeric groups per row
+
+Use `row.quantity`, `row.count` and `row.price` to access groups declared as `(?<quantity>...)`, `(?<count>...)` and `(?<price>...)`. For example:
+
+```text
+input items:
+  type = regex-list
+  label = Quantity, count and price per row
+  pattern = ^(?<quantity>\d+(?:[.,]\d+)?)\s*kg\s*x\s*(?<count>\d+)\s*units\s*@\s*(?<price>\d+(?:[.,]\d+)?)\s*EUR/kg$
+  flags = u
+
+output line_totals:
+  type = decimal-list
+  source = items
+  label = Price per row
+  formula = row.quantity * row.count * row.price
+  decimals = 2
+  fixed = true
+```
+
+The row `2.5 kg x 3 units @ 4.20 EUR/kg` produces `31.50` in an English-language wiki. A scalar output can then use `sum(line_totals)`. See [multi_value_text.txt](examples/multi_value_text.txt) for a complete calculator with default inputs and a total.
+
+Group names start with a lowercase letter and use lowercase letters, digits and underscores. A group is available only within a list formula using its regex input as `source`. It does not conflict with scalar input names: `row.price` and `price` are distinct.
+
+- Referenced groups must contain valid decimal numbers. Optional groups missing from a matched row cause an error if the formula uses them.
+- Input `min` and `max` apply to the numeric groups used by formulas. A legacy `value` group is always validated.
+- Unmatched and empty rows produce blank result rows. An entered zero is a numeric value.
+- Unused text captures remain allowed, preserving compatibility with existing patterns.
+- Without a `value` group, aggregate the calculated output list, such as `sum(line_totals)` or `count(line_totals)`; the input has no single numeric column to aggregate.
+- A `text-list` output requires `value` and replaces only that group. Selecting other replacement targets is not supported.
+- Existing formulas using `value` remain valid; `row.value` is also available.
 
 ## Chemistry calculator
 
@@ -362,6 +440,7 @@ The [examples directory](examples/README.md) contains self-contained calculators
 | [percentage_conversion.txt](examples/percentage_conversion.txt) | Convert percentages to ppm and back. |
 | [scale_quantities.txt](examples/scale_quantities.txt) | Scale a list to a different number of servings or units. |
 | [scale_text.txt](examples/scale_text.txt) | Scale quantities in recipe text and preserve unmatched rows. |
+| [multi_value_text.txt](examples/multi_value_text.txt) | Calculate a row price from quantity, count and price captures. |
 | [statistics.txt](examples/statistics.txt) | Calculate sum, count, average, minimum and maximum. |
 | [price_calculation.txt](examples/price_calculation.txt) | Calculate net amounts, tax and gross total with linked outputs. |
 | [dilution.txt](examples/dilution.txt) | Calculate a final concentration from two percentage inputs. |

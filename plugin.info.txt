@@ -1,7 +1,7 @@
 base   calculator
 author saggi
 email  saggi@gmx.de
-date   2026-10-19
+date   2026-10-23
 name   Calculator
 desc   Configurable calculators with scalar inputs and line-by-line value lists
 url    https://www.dokuwiki.org/plugin:calculator

@@ -102,13 +102,13 @@ $lang['chem_basis'] = 'M = Σ(n × Atommasse). Elementanteil (%) = n × Atommass
 $lang['chem_weights_source'] = 'Standardatomgewichte: Zentralwerte ohne Fortpflanzung von Unsicherheiten oder Isotopenvariationen. Quelle:';
 $lang['chem_fixed'] = 'Fest vorgegebene Formel';
 
-$lang['regex_hint'] = 'Pro Zeile wird die erste Zahl aus der Gruppe value ersetzt. Text und Zeilen ohne Treffer bleiben erhalten.';
+$lang['regex_hint'] = 'Benannte Zahlengruppen sind in Listenformeln als row.name verfügbar. Eine Gruppe value erlaubt zusätzlich das Ersetzen dieser Zahl im Text.';
 $lang['regex_pattern'] = 'RegEx';
 $lang['regex_processing'] = 'Text wird ausgewertet …';
 $lang['regex_invalid_pattern'] = 'Ungültige RegEx (maximal 512 Bytes, ohne /-Trennzeichen).';
 $lang['regex_invalid_flags'] = 'Erlaubte RegEx-Flags: i und u, jeweils höchstens einmal.';
-$lang['regex_named_group_required'] = 'Die RegEx benötigt eine benannte Zahlengruppe (?<value>...).';
-$lang['regex_invalid_capture'] = 'Die RegEx hat getroffen, aber keine Zahl in der Gruppe value geliefert.';
+$lang['regex_named_group_required'] = 'Die RegEx benötigt mindestens eine benannte Zahlengruppe, zum Beispiel (?<value>...) oder (?<menge>...).';
+$lang['regex_invalid_capture'] = 'Die RegEx hat getroffen, aber eine benötigte Zahlengruppe nicht erfasst.';
 $lang['regex_unsupported'] = 'Die RegEx-Auswertung konnte nicht gestartet werden. Web Worker und RegEx-Gruppenindizes müssen verfügbar sein.';
 $lang['regex_timeout'] = 'Die RegEx-Auswertung wurde nach 2 Sekunden abgebrochen. Bitte Muster oder Eingabe vereinfachen.';
 $lang['regex_not_ready'] = 'Der Text wurde noch nicht ausgewertet.';
@@ -121,3 +121,15 @@ $lang['circular_reference'] = 'Kreisbezug zwischen Ausgaben.';
 $lang['definition_invalid_default_text'] = 'Der Standardtext muss mit einem doppelten Anführungszeichen geschlossen werden; danach ist nur Leerraum erlaubt.';
 
 $lang['definition_default_too_large'] = 'Der Standardtext darf höchstens %s Bytes und %s Zeilen enthalten.';
+
+$lang['regex_invalid_group_name'] = 'Ungültiger Name einer Zahlengruppe: %s. Kleinbuchstabe am Anfang, danach Kleinbuchstaben, Ziffern oder Unterstriche (maximal 64 Zeichen).';
+
+$lang['regex_text_requires_value'] = 'Eine text-list-Ausgabe benötigt eine benannte Gruppe value. Für andere Zahlengruppen eine decimal-list-Ausgabe verwenden.';
+
+$lang['definition_invalid_template'] = 'Ungültige Ausgabevorlage. Eine nicht leere Zeile mit höchstens %s Bytes verwenden; erlaubt sind nur die Platzhalter {line}, {label}, {value} und {unit}.';
+
+$lang['definition_template_requires_list'] = 'Der Platzhalter {line} benötigt eine Listenausgabe mit source.';
+
+$lang['invalid_template'] = 'Ungültige Ausgabevorlage.';
+
+$lang['definition_exists_argument'] = 'exists() benötigt genau eine benannte RegEx-Gruppe, zum Beispiel exists(row.quantity).';

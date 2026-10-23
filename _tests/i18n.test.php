@@ -5,8 +5,10 @@ use CalculatorPlugin\DefinitionException;
 $count = 0;
 $arguments = [
     'definition_invalid_boolean' => ['break'],
+    'definition_invalid_template' => [2000], 'definition_template_requires_list' => [], 'definition_exists_argument' => [],
     'definition_invalid_default_text' => [], 'definition_default_too_large' => [200000, 10000],
     'definition_circular_reference' => ['a -> b -> a'],
+    'regex_invalid_group_name' => ['quantity'], 'regex_text_requires_value' => [],
     'regex_invalid_pattern' => [], 'regex_invalid_flags' => [], 'regex_named_group_required' => [],
     'constants_multiple_blocks' => [], 'constants_invalid_line' => [],
     'constants_duplicate_name' => ['test'], 'constants_too_many' => [128],

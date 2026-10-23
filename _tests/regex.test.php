@@ -16,7 +16,7 @@ foreach([
  [str_replace('  flags = u','  flags = g',$body),'regex_invalid_flags'],
  [str_replace('  flags = u','  flags = uu',$body),'regex_invalid_flags'],
  [preg_replace('/^  pattern = .*$/m','  pattern = (',$body),'regex_invalid_pattern'],
- [str_replace('  type = text-list','  type = decimal-list',$body),'definition_invalid_source'],
+ [str_replace('  type = text-list','  type = decimal',$body),'definition_scalar_source'],
  [str_replace('  type = regex-list','  type = decimal-list',$body),'definition_unknown_property']
 ] as $case){
  try{DefinitionParser::parse('test',$case[0]);throw new Exception('Bad regex definition accepted');}
