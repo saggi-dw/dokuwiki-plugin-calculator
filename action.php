@@ -33,7 +33,7 @@ class action_plugin_calculator extends ActionPlugin
         $cache = $event->data;
         $cache->depends['files'] = array_merge($cache->depends['files'] ?? [], [
             __DIR__ . '/syntax/definition.php', __DIR__ . '/syntax/constants.php', __DIR__ . '/syntax/user.php', __DIR__ . '/syntax/chem.php', __DIR__ . '/inc/DefinitionParser.php',
-            __DIR__ . '/inc/ExpressionValidator.php', __DIR__ . '/helper.php',
+            __DIR__ . '/inc/ExpressionValidator.php', __DIR__ . '/inc/StructFormula.php', __DIR__ . '/helper.php',
             __DIR__ . '/lang/en/lang.php', __DIR__ . '/lang/de/lang.php',
         ]);
     }

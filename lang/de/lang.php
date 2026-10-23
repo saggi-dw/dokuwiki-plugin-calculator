@@ -133,3 +133,12 @@ $lang['definition_template_requires_list'] = 'Der Platzhalter {line} benötigt e
 $lang['invalid_template'] = 'Ungültige Ausgabevorlage.';
 
 $lang['definition_exists_argument'] = 'exists() benötigt genau eine benannte RegEx-Gruppe, zum Beispiel exists(row.quantity).';
+
+// Optional Struct page-field formulas.
+$lang['chem_struct_reference'] = 'Als gesamte Formel eine Struct-Seitenfeldreferenz im Format {{$schema.feld}} verwenden.';
+$lang['chem_struct_access'] = 'Du hast keine Leseberechtigung für die Struct-Formel dieser Seite.';
+$lang['chem_struct_missing'] = 'Zum Lesen dieser Formel wird eine kompatible Struct-Installation benötigt.';
+$lang['chem_struct_read_error'] = 'Die Formel konnte nicht aus Struct gelesen werden.';
+$lang['chem_struct_value'] = 'Das Struct-Feld muss genau eine nicht leere Formel als Text enthalten (höchstens 2000 Bytes). Schema- und Feldnamen prüfen.';
+
+$lang['chem_struct_unsupported'] = 'Dieser Chemierechner unterstützt ein einzelnes Struct-Feld der aktuellen Seite, ohne zusätzliche Filter oder Schema-Aliase.';

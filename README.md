@@ -6,7 +6,7 @@ A calculator toolkit for your wiki: define input fields and formulas on a wiki p
 
 The plugin supports individual numbers, numeric lists and numbers embedded in text. A built-in chemistry calculator also calculates molar masses and elemental mass fractions from chemical formulas.
 
-**Documented version:** 0.6.2 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
+**Documented version:** 0.6.4 · **Authors:** saggi and ChatGPT · **License:** [GNU GPL v2](LICENSE)
 
 ## Contents
 
@@ -414,6 +414,20 @@ Compound names, CAS searches, charges, isotope notation, fractional/decimal indi
 Elemental fractions refer to the pure compound or its specified proportion in a mixture. Their sum equals that proportion; molar mass and atom counts remain unchanged. Leading coefficients multiply the entire formula unit: for `2H2O`, the reported mass refers to both units.
 
 The calculator contains 84 central values from the [CIAAW Abridged Standard Atomic Weights 2024](https://www.ciaaw.org/abridged-atomic-weights.htm). Elements without a stored value are rejected; uncertainties and isotope variations are not propagated. Fixed formulas are also calculated in the browser and require JavaScript.
+
+### Formulas from Struct page data
+
+If the optional [Struct plugin](https://www.dokuwiki.org/plugin:struct) is installed, a fixed chemistry calculator can read a single text field from the current page:
+
+```text
+<calcchem {{$material.formula}}>
+```
+
+Here `material` is the schema and `formula` the field label. The field must contain one plain chemical formula, for example `C32H16CuN8`. Use the exact schema and field names. The whole formula argument must be a Struct reference. Calculator loads Struct only for such references and delegates their inner syntax to Struct's own `InlineConfigParser`. Spaces and quoted field names are accepted, for example `<calcchem {{$ material.formula }}>` and `<calcchem {{$material."Chemical formula"}}>`. References to other pages, additional filters, schema aliases, multiple columns, global/serial data and mixed literal/reference formulas are not supported. Unsupported selections produce a localized message; they are never silently treated as a current-page lookup.
+
+Calculator reads the raw value through Struct's public helper API while rendering the page, after checking read access to the current page. It does not render Struct markup inside the tag. The value is not stored in parser instructions. For a page containing this reference, Calculator disables the rendered page cache so saved Struct changes appear on the next page load. Existing revision views pass their revision timestamp to Struct. Unsaved Struct edits are not read.
+
+An unavailable Struct plugin, a missing/empty field, a non-text or multi-value field and read failures produce localized messages. An empty field does not switch to an interactive calculator. Literal `<calcchem TiO2>` and interactive `<calcchem>` work without Struct and retain their normal caching behavior.
 
 ## Configuration and access control
 

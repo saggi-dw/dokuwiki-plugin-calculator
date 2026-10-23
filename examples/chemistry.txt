@@ -23,3 +23,13 @@
 ===== Hydrate =====
 
 <calcchem CuSO4·5H2O>
+
+===== Optional: formula from Struct page data =====
+
+Requires the Struct plugin and a single text field material.formula assigned to the current page.
+
+<calcchem {{$material.formula}}>
+
+The equivalent reference with spaces uses Struct's own parser:
+
+<calcchem {{$ material.formula }}>

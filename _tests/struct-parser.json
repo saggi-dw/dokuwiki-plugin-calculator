@@ -1,0 +1,430 @@
+{
+    "material.formula": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    " material.formula ": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    " \"material\".\"formula\" ": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.\"chemical formula\"": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "chemical formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.\"formula.with.dot\"": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula.with.dot"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.unknown": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "unknown"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.formula.other": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "other"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "material",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "formula",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "materials:other.material.formula": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "materials:other",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.formula ? filter: \"formula = H2O\"": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "formula",
+                "=",
+                "H2O",
+                "AND"
+            ],
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material.formula ? filter: invalid": null,
+    "material.formula,unknown": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null,
+            null
+        ],
+        "headers": [
+            null,
+            null
+        ],
+        "cols": [
+            "formula",
+            "unknown"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                ""
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    },
+    "material alias.formula": {
+        "limit": 0,
+        "dynfilters": false,
+        "summarize": false,
+        "rownumbers": false,
+        "sepbyheaders": false,
+        "target": "",
+        "align": [
+            null
+        ],
+        "headers": [
+            null
+        ],
+        "cols": [
+            "formula"
+        ],
+        "widths": [],
+        "filter": [
+            [
+                "%pageid%",
+                "=",
+                "$ID$",
+                "AND"
+            ]
+        ],
+        "schemas": [
+            [
+                "material",
+                "alias"
+            ]
+        ],
+        "sort": [],
+        "csv": true,
+        "nesting": 0,
+        "index": 0,
+        "classes": [],
+        "actcol": -1
+    }
+}

@@ -133,3 +133,12 @@ $lang['definition_template_requires_list'] = 'The {line} placeholder requires a 
 $lang['invalid_template'] = 'Invalid output template.';
 
 $lang['definition_exists_argument'] = 'exists() requires exactly one named regex capture, for example exists(row.quantity).';
+
+// Optional Struct page-field formulas.
+$lang['chem_struct_reference'] = 'Use a Struct page-field reference in the form {{$schema.field}} as the complete formula.';
+$lang['chem_struct_access'] = 'You do not have permission to read the Struct formula on this page.';
+$lang['chem_struct_missing'] = 'A compatible Struct installation is required to read this formula.';
+$lang['chem_struct_read_error'] = 'Unable to read the formula from Struct.';
+$lang['chem_struct_value'] = 'The Struct field must contain one non-empty formula as text (maximum 2000 bytes). Check the schema and field names.';
+
+$lang['chem_struct_unsupported'] = 'This chemistry calculator supports one Struct field on the current page, without additional filters or schema aliases.';

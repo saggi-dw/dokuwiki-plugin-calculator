@@ -6,7 +6,7 @@ Ein Rechnerbaukasten für dein Wiki: Definiere Eingabefelder und Formeln auf ein
 
 Das Plugin unterstützt einzelne Zahlen, Zahlenlisten und Zahlen in freien Texten. Ein integrierter Chemie-Rechner berechnet zusätzlich molare Massen und die Massenanteile der Elemente aus einer chemischen Formel.
 
-**Dokumentierter Stand:** 0.6.2 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
+**Dokumentierter Stand:** 0.6.4 · **Autoren:** saggi und ChatGPT · **Lizenz:** [GNU GPL v2](LICENSE)
 
 ## Inhalt
 
@@ -414,6 +414,20 @@ Nicht unterstützt werden Stoffnamen, CAS-Suche, Ladungen, Isotopenangaben, gebr
 Die Elementanteile beziehen sich auf die reine Verbindung bzw. den eingegebenen Mischungsanteil. Ihre Summe entspricht dem Anteil; molare Masse und Atomanzahl bleiben davon unabhängig. Führende Faktoren multiplizieren die vollständige Formeleinheit: Bei `2H2O` bezieht sich die ausgegebene Masse auf beide Einheiten.
 
 Hinterlegt sind 84 Zentralwerte aus den [CIAAW Abridged Standard Atomic Weights 2024](https://www.ciaaw.org/abridged-atomic-weights.htm). Elemente ohne hinterlegten Wert werden abgelehnt; Unsicherheiten und Isotopenvariationen werden nicht fortgepflanzt. Auch feste Formeln werden im Browser berechnet und benötigen JavaScript.
+
+### Formeln aus Struct-Seitendaten
+
+Mit installiertem [Struct-Plugin](https://www.dokuwiki.org/plugin:struct) kann ein fester Chemierechner ein einzelnes Textfeld der aktuellen Seite auslesen:
+
+```text
+<calcchem {{$material.formula}}>
+```
+
+`material` ist das Schema, `formula` die Feldbezeichnung. Das Feld muss eine einzelne chemische Formel als einfachen Text enthalten, beispielsweise `C32H16CuN8`. Schema- und Feldnamen müssen exakt stimmen. Das gesamte Formelargument muss eine Struct-Referenz sein. Calculator lädt Struct nur bei solchen Referenzen und übergibt deren innere Syntax an Structs eigenen `InlineConfigParser`. Leerzeichen und zitierte Feldnamen sind erlaubt, beispielsweise `<calcchem {{$ material.formula }}>` und `<calcchem {{$material."Chemische Formel"}}>`. Andere Seiten, zusätzliche Filter, Schema-Aliase, mehrere Spalten, globale/serielle Daten und gemischte Formeln aus Text und Referenzen werden nicht unterstützt. Nicht unterstützte Auswahlen ergeben eine übersetzte Meldung und werden niemals stillschweigend als Abfrage der aktuellen Seite behandelt.
+
+Calculator liest den Rohwert beim Rendern über die öffentliche Struct-Schnittstelle und prüft vorher die Leseberechtigung für die aktuelle Seite. Es wird keine Struct-Wikisyntax innerhalb des Tags gerendert. Der Wert wird nicht in Parseranweisungen gespeichert. Bei einer Seite mit dieser Referenz deaktiviert Calculator den Cache der gerenderten Seite, damit gespeicherte Struct-Änderungen beim nächsten Laden erscheinen. Bei alten Seitenrevisionen wird deren Zeitstempel an Struct übergeben. Ungespeicherte Struct-Änderungen werden nicht gelesen.
+
+Fehlendes Struct-Plugin, fehlende/leere Felder, andere Datentypen, Mehrfachwerte und Lesefehler ergeben übersetzte Meldungen. Ein leeres Feld öffnet keinen interaktiven Rechner. Feste Formeln wie `<calcchem TiO2>` und der interaktive Aufruf `<calcchem>` funktionieren weiterhin ohne Struct und behalten das normale Cache-Verhalten.
 
 ## Konfiguration und Zugriffsrechte
 
